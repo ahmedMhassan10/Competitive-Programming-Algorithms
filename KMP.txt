@@ -1,0 +1,35 @@
+PREFIX OF STRING -->any string start from first char
+PROPER PREFIX -->any prefix except string its self
+SUFFIX OF STRING -->any string ends with last char
+PROPER SUFFIX OF STRING -->any suffix except string its self
+
+
+void compute_prefix(string &s,vll &fail){
+    fp(i,1,siz(s)-1){
+        int j=fail[i-1];
+        while(j>0&& s[i]!=s[j])
+            j=fail[j-1];
+        if(s[i]==s[j])
+            fail[i]=j+1;
+        else fail[i]=0;
+    }
+}
+void kmp(string &s,string &pat){
+    ll k=0;
+    ll n=siz(s),m=siz(pat);
+    vll fail(m);
+
+    compute_prefix(pat,fail);
+
+    fo(i,n){
+        while(k>0 &&pat[k]!=s[i]){
+            k=fail[k-1];
+        }
+        if(pat[k]==s[i])
+            k++;
+        if(k==m){
+            cout<<i-k+1<<'\n';// zero based
+            k=fail[k-1];
+        }
+    }
+}

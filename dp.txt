@@ -1,0 +1,305 @@
+->LIS
+ll dp[N][N],num;
+bool vis[N][N];
+vector<ll>vec(N);
+int solve(int index,int len){
+    if(index==num+1) return 0;
+    if(vis[index][len])return dp[index][len];
+    vis[index][len]=1;
+    ll s1=0,s2=0;
+    s1=solve(index+1,len);
+    if(vec[index]>vec[len]){
+        s2=1+solve(index+1,index);
+    }
+    dp[index][len]=max(s1,s2);
+    return max(s1,s2);
+}
+
+iterative: nlog(n)
+        ll num;cin>>num;
+        vll vec(num);
+        fo(i,num)cin>>vec[i];
+        vll longe;
+        fvec(item,vec){
+            auto index=lower_bound(all(longe),item);
+            if(index==longe.end())longe.pb(item);
+            else{
+                longe[index-longe.begin()]=item;
+            }
+        }
+        cout<<longe.size(); 
+-> LPS
+ll dp[N][N];
+string str;
+int max(int a,int b){
+    return a>b?a:b;
+}
+int maxPalinSubSeq(int i,int j){
+    if(i==j)
+        return 1;
+    if(i+1==j && str[i]==str[j])
+        return 2;
+    if(dp[i][j]!=-1)return dp[i][j];
+    if(str[i]==str[j])
+        return dp[i][j]=2+maxPalinSubSeq(i+1,j-1);
+    else
+        return dp[i][j]=max(maxPalinSubSeq(i+1,j),maxPalinSubSeq(i,j-1));
+}
+-- > count of palendromic substrings
+ll dp[N][N];
+ll solve(int fi,int se){
+    if(fi==se)return 0;
+    if(dp[fi][se]!=-1)return dp[fi][se];
+    ll ans=0;
+    if(str[fi]==str[se]){
+        ans+= 1+solve(fi+1,se-1);
+     ans+=solve(fi+1,se)+solve(fi,se-1)-solve(fi+1,se-1);
+    dp[fi][se]=ans;
+    return ans;
+}
+-> LCS problem
+
+string str1,str2;
+ll dp[N][N];
+ll solve(int fi,int se){
+    if(fi==siz(str1)||se==siz(str2))return 0;
+    if(dp[fi][se]!=-1)return dp[fi][se];
+    ll s1=0,s2=0,ans=0;
+    if(str1[fi]==str2[se]){
+        ans= 1+solve(fi+1,se+1);
+    }else{
+     s1=solve(fi+1,se),s2=solve(fi,se+1);}
+     ans= maxe(ans,s1,s2);
+    dp[fi][se]=ans;
+    return ans;
+}
+->LCS path
+
+string str1,str2;
+int dp[N][N];
+ll solve(int fi,int se){
+    if(fi==siz(str1)||se==siz(str2))return 0;
+    if(dp[fi][se]!=-1)return dp[fi][se];
+    int s1=0,s2=0,ans=0;
+    if(str1[fi]==str2[se]){
+        ans= 1+solve(fi+1,se+1);
+    }else{
+     s1=solve(fi+1,se),s2=solve(fi,se+1);}
+     ans= maxe(ans,s1,s2);
+    dp[fi][se]=ans;
+    return ans;
+}
+void path(int fi,int se){
+    if(fi==siz(str1)||se==siz(str2))return ;
+    if(str1[fi]==str2[se]){
+            cout<<str1[fi];
+            path(fi+1,se+1);
+    }else{
+    ll s1=solve(fi+1,se),s2=solve(fi,se+1);
+    if(s1>=s2){
+            path (fi+1,se);
+    }else path(fi,se+1);
+}}
+
+->knapsack
+-->rec
+ll dp[N][OO],m,k;
+bool vis[N][OO];
+vector<ll>ww(N),valu(N);
+ll solve(int index,int w){
+    if(k<=index)return 0;
+    if(vis[index][w])return dp[index][w];
+        ll s1=0,s2=0;
+
+    vis[index][w]=1;
+    s1=solve(index+1,w);
+    if(w-ww[index]>=0)
+        s2=solve(index+1,w-ww[index])+valu[index];
+    dp[index][w]=max(s1,s2);
+    return max(s1,s2);
+}
+-->iter
+	ll dp[N];ll n,w;
+        clr(dp,0);
+        cin>>n>>w;
+        vector<ll>ww(N),valu(N);
+        fp(i,1,n){
+            cin>>ww[i]>>valu[i];
+        }
+        dp[0]=0;
+        for(int i=1;i<=n;i++){
+             for(int j=w;j>=0;j--){
+                    dp[j+ww[i]]=max(dp[j]+valu[i],dp[j+ww[i]]);
+             }
+        }
+        ll ans=0;
+        fo(i,w+1){
+            ans=max(ans,dp[i]);
+        }
+        cout<<ans;
+
+
+->knapsack 2 when weight constrains is very big work on value
+    ll n,w;
+    cin>>n>>w;
+    vector<ll>ww(n+1),valu(n+1),dp(N,OO);
+    ll sum_value=0;
+    fp(i,1,n){
+        cin>>ww[i]>>valu[i];
+        sum_value+=valu[i];
+    }
+    dp[0]=0;
+    for(int i=1;i<=n;i++){
+        for(int j=sum_value;j>=0;j--){
+            dp[j+valu[i]]=min(dp[j]+ww[i],dp[j+valu[i]]);
+        }
+    }
+    ll ans=0;
+    fo(i,sum_value+1){
+        if(dp[i]<=w){
+            ans=max(ans,(ll)i);
+        }
+    }
+    cout<<ans;
+
+-> cents exchange
+
+
+order isn`t IMP
+
+
+vector<int>vec={50,25,10,5,1};
+ll dp[N];
+clr(dp,0);
+dp[0]=1;
+fvec(item,vec){
+	fp(i,item,N-1){
+   		dp[i]=(dp[i]+dp[i-k]+mod)%mod;
+  	 }
+}
+order is IMP
+
+
+
+vector<int>vec={50,25,10,5,1};
+ll dp[N];
+dp[0]=0;
+for(int i=1;i<=N;i++)
+{	
+    fvec(coin,vec){
+	if(i-coin>=0)
+		dp[i]+=dp[i-coin];
+    }
+}
+
+
+-->to get minimum coins to cover value
+
+
+vector<int>vec={50,25,10,5,1};
+ll dp[N];
+clr(dp,OO);
+dp[0]=0;
+for(int i=1;i<=N;i++){
+    fvec(coin,vec){
+    	if(i-coin>=0)
+	  dp[i]=min(dp[i],dp[i-coin]+1);
+    }
+}
+---->get all sums from the needed coins
+vll dp(N,0);
+        dp[0]=1;
+        fo(j,num){
+            fn(i,N-2,1){
+                //cout<<1;
+                //if(i<vec[num])continue;
+                //cout<<1;
+                if(i>=vec[j]&&dp[i-vec[j]]==1){
+                    dp[i]=1;
+                }
+            }
+        }
+-> Consecutive Ranges Style
+
+time -> O(N*N) space ->O(N*N)
+int dp[N][N],coun[N],cost[N],num;//cost ->price of each package  ,coun->number of items
+ll solve(int first,int second,ll sum){
+    if(first==num){
+        if(first!=second)return OO;// open segment
+        return 0;
+    }
+    if(dp[first][second]!=-1)return dp[first][second];
+
+    ll ans= solve(first+1,first+1,0)+(sum+10+coun[first])*cost[first];
+    ans=min(ans,solve(first+1,second,sum+coun[first]));
+    dp[first][second]=ans;
+    return ans;
+}
+
+
+time -> O(N*N) space ->O(N)
+
+
+int dp[N],coun[N],cost[N],num;//cost ->price of each package  ,coun->number of items
+ll solve(int first){
+    if(first==num){
+        return 0;
+    }
+    if(dp[first]!=-1)return dp[first];
+
+    ll ans= OO,sum=0;
+    for(int j=first;j<num;j++){
+        sum+=coun[j];
+        ans=min(ans,(sum+10)*cost[j]+solve(j+1));
+    }
+    dp[first]=ans;
+    return ans;
+}
+
+
+
+--> Nested Ranges Style-----divide range in small nested ranges--O(n^3)
+int dp[N][N],num,weight[N];
+ll solve(int first,int second){
+    if(second-first+1<=2){
+        return 0;
+    }
+    if(dp[first][second]!=-1)return dp[first][second];
+    ll ans=0;
+    for(int j=first+1;j<second;j++){
+        ans=max(ans,solve(first,j)+solve(j,second)+weight[first]*weight[second]);
+    }
+    dp[first][second]=ans;
+    return ans;
+}
+
+
+-->dp  on masks
+int n , m , q , x[50] , y[50];
+int dp[12][1025];
+int solve( int idx , int msk) // n * n * 2^n = 10 * 10 * 1024 = 1e5 ,
+{
+    // base case
+    if(__builtin_popcount(msk) == q)
+        return abs(x[idx] - x[0]) + abs(y[idx] - y[0]);
+    int &ret = dp[idx][msk];
+    if(~ret)
+        return ret;
+    ret = 1e9;
+    for ( int i = 1 ; i <= q ; i++)
+    {
+        if((msk >>(i-1))&1)
+            continue;
+        ret = min(ret , abs(x[idx] - x[i]) + abs(y[idx] - y[i]) + solve(i,msk | (1<<(i-1))));
+    }
+    return ret;
+}
+void testCase() {
+    cin >> n >> m;
+    cin >> x[0] >> y[0] >> q;
+    for ( int i = 1; i <= q ; i++)
+        cin >> x[i] >> y[i];
+    memset(dp,-1,sizeof dp);
+    cout << "The shortest path has length ";
+    cout << solve(0,0) << '\n';
+}

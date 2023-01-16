@@ -1,0 +1,120 @@
+#include<bits/stdc++.h>
+using namespace std;
+#define all(v)				((v).begin()), ((v).end())
+#define siz(v)				((int)((v).size()))
+#define clr(v, d)			memset(v, d, sizeof(v))
+#define rep(i, v)		for(int i=0;i<sz(v);++i)
+#define fo(i, n)		for(int i=0;i<(int)(n);++i)
+#define fp(i, j, n)	for(int i=(j);i<=(int)(n);++i)
+#define fn(i, j, n)	for(int i=(j);i>=(int)(n);--i)
+#define fvec(i,vec) for(auto i:vec)
+#define pb				push_back
+#define MP			make_pair
+#define mine(x,y,z) min(x,min(y,z))
+#define maxe(x,y,z) max(x,min(y,z))
+#define F first
+#define S second
+typedef long double   	  ld;
+typedef vector<int>       vi;
+typedef vector<double>    vd;
+typedef vector< vi >      vvi;
+typedef vector< vd >      vvd;
+typedef vector<string>    vs;
+typedef unsigned long long ull;
+typedef  long long ll;
+const ll OO =10e16 , mod = 1e9+7;
+const int N = 2e5+10 ;
+
+ll n ,m ;
+vector<ll>dist(N),par(N);
+vector < pair < ll, ll> > g[N];
+
+void Dijkstra( ll src)
+{
+    dist.assign(n+1,OO);
+    par.assign(n+1,-1);
+    dist[src] = 0;
+                    //  distance node
+    priority_queue< pair < ll, ll> > pq;
+    pq.push({0,src});
+    while(!pq.empty())
+    {
+        ll node = pq.top().second , distance = -pq.top().first;
+        pq.pop();
+        if(distance > dist[node])
+            continue;
+        for(auto ch : g[node])
+        {
+            if(dist[node] + ch.second < dist[ch.first])
+            {
+		par[ch.first]=node;
+                dist[ch.first] = dist[node] + ch.second;
+                pq.push({-dist[ch.first],ch.first});
+            }
+        }
+    }
+}
+void getpath(ll num){
+	vector<ll>vec;
+	while(num!=-1){
+		vec.pb(num);
+		num=par[num];	
+	}	
+	fn(i,siz(vec)-1,0){
+		cout<<vec[i]<<" ";
+	}
+
+}
+void testCase()
+{
+    cin >> n >> m ;
+    for ( ll i = 0 ; i < m ;i++)
+    {
+        ll u, v ,w;
+        cin >> u >> v >> w;
+        g[u].push_back({v,w});
+        g[v].push_back({u,w});
+    }
+    Dijkstra(src);
+}
+
+
+
+////if we want to run multisource dijkstra we pass more than one src--> want more than one node to act as source the make thier dist ===0
+for matrix
+
+// dijkstra on grid
+
+ll dist[N][N];
+pari<int,int>par[N][N];
+int g[N][N];
+vector<int>dx={1,0,-1,0,1,-1,1,-1};
+vector<int>dy={0,1,0,-1,1,-1,-1,1};
+void Dijkstra(int x,int y int n,int m)
+{
+    fo(i,n)
+        fo(j,m) {dist[i][j]=OO;par[i][j]=-1;}	
+    
+    dist[x][y] = g[x][y]; // according to the problem
+    priority_queue< pair < int , pair<int,int> > > pq;
+    pq.push({dist[0][0],{x,y}});
+    while(!pq.empty())
+    {
+        pair<int,int> node = pq.top().second ;int distance = -pq.top().first;
+        pq.pop();
+        
+        if(distance > dist[node.F][node.second])
+            continue;
+        fo(i,4)
+        {
+            pair<int,int>ch={node.F+dx[i],node.S+dy[i]};
+            if(ch.F<0||ch.S<0||ch.F>=n||ch.S>=m)continue;
+            if(dist[node.F][node.S] + g[ch.F][ch.S]  < dist[ch.first][ch.second])
+            {
+		par[ch.F][ch.S]=node;
+                dist[ch.first][ch.second] =dist[node.F][node.S] + g[ch.F][ch.S]   ;
+                pq.push({-dist[ch.first][ch.second],ch});
+            }
+        }
+    }
+}

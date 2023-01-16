@@ -1,0 +1,133 @@
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+we can check primarty by check if N is divisable by any prime less or equal than sqrt(N) (save the primes first then check)
+ 
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+to list primes less than N in o(Nlog(log(N))):
+
+    vector<ll> primes(N+1000,1);
+    for( ll i=2;i*i<=N;i++)
+    {
+        if(primes[i]==1){
+            for(ll j=i*i;j<=N;j+=i){
+                primes[j]= 0;
+            }
+        }
+    }
+
+for each i if primes[i]=1 --->then i is prime
+
+check primes using seive
+bool isPrime(ll N) { // a good enough deterministic prime tester
+	if (N <= _sieve_size) return bs[N]; // O(1) for small primes
+	for (int i = 0; i < (int)primes.size(); i++)
+		if (N % primes[i] == 0) return false;  --------O(sqrt(N)/ln(N))
+return true; // it takes longer time if N is a large prime!
+}
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+long long in c++ will accept untill factorial(20) after that this will overflow
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+we can get factorization using primes from seive in O(sqrt(N)/ln(N)) which is better than the famous one which works in O(sqrt(N))
+
+
+
+vector<long long> primeFactors(ll N) { // remember: vi is vector<int>, ll is long long
+	vector<long long> factors;
+	ll PF_idx = 0, PF = primes[PF_idx]; // primes has been populated by sieve
+	while (PF * PF <= N) { // stop at sqrt(N); N can get smaller
+		while (N % PF == 0) {
+			N /= PF; 
+			factors.push_back(PF);
+		} // remove PF
+		PF = primes[++PF_idx]; // only consider primes!
+	}
+	if (N != 1) factors.push_back(N); // special case if N is a prime
+	return factors; // if N does not fit in 32-bit integer and is a prime
+}
+
+
+Get the count of divisors of N
+
+
+Divisor of integer N is defined as an integer that divides N without leaving a remainder.
+
+If a number N = ai ×bj ×. . .×ck, then N has (i+1)×(j +1)×. . .×(k +1) divisors.
+
+For example: N = 60 = 22 × 31 × 51 has (2 + 1) × (1 + 1) × (1 + 1) = 3 × 2 × 2 = 12 divisors.
+
+The 12 divisors are: {1, 2, 3, 4, 5, 6, 10, 12, 15, 20, 30, 60}.
+
+The prime factors of 12 are highlighted. See that N has more divisors than prime factors.
+
+Get the sum of Divisors of N
+
+ll sumDiv(ll N) {
+	ll PF_idx = 0, PF = primes[PF_idx], ans = 1; // start from ans = 1
+	while (PF * PF <= N) {
+		ll power = 0;
+		while (N % PF == 0) { N /= PF; power++; }
+		ans *= ((ll)pow((double)PF, power + 1.0) - 1) / (PF - 1);
+		PF = primes[++PF_idx];
+	}
+	if (N != 1) ans *= ((ll)pow((double)N, 2.0) - 1) / (N - 1); // last
+	return ans;
+}
+
+
+Get the number of Number which are relatively prime to N ---> GCD(N,x)==1
+
+
+ll EulerPhi(ll N) {
+	ll PF_idx = 0, PF = primes[PF_idx], ans = N; // start from ans = N
+	while (PF * PF <= N) {
+		if (N % PF == 0) ans -= ans / PF; // only count unique factor
+		while (N % PF == 0) N /= PF;
+		PF = primes[++PF_idx];
+	}
+	if (N != 1) ans -= ans / N; // last factor
+	return ans;
+}
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Modified Sieve----> calculate the number of different prime factors for all numbers less than N
+
+Instead of finding the prime factors and then calculate the required values, we start from the prime numbers
+and modify the values of their multiples. The short modified sieve code is shown below:
+
+
+memset(numDiffPF, 0, sizeof numDiffPF);
+for (int i = 2; i < N; i++)
+	if (numDiffPF[i] == 0) // i is a prime number
+	for (int j = i; j < N; j += i)
+		numDiffPF[j]++; // increase the values of multiples of i
+
+
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
