@@ -67,24 +67,21 @@ typedef vector< vi >      vvi;
 typedef vector< vd >      vvd;
 typedef vector<string>    vs;
 const ll OO =1e16 , mod = 1e9+7, N =1e5+5 ;
-
-map<ll,vector<int>>adjList;
+vi par(N,-1);
+vector<vector<int>>adjList(N);
 vector<ll> len(N, OO);
 void BFS(int s) {
-	
-	queue<int> q;
-	q.push(s), len[s] = 0;
-
-	while(!q.empty()) {
-		
-			
-            int cur = q.front(); q.pop();
-			fvec(i, adjList[cur])
-			    if (len[i] == OO){
-				q.push(i); len[i] =len[cur]+1;}
-		
-	}
-	
+    queue<int> q;
+    q.push(s), len[s] = 1;
+    while(!q.empty()) {
+        int cur = q.front(); q.pop();
+        fvec(i, adjList[cur])
+            if (len[i] == OO){
+                q.push(i);
+                len[i] =len[cur]+1;
+                par[i]=cur;
+            }
+    }
 }
 
 

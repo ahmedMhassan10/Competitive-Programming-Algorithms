@@ -63,14 +63,18 @@ void isNeg(){
 	}
 }
 void testcase(){
-	for(int i=1;i<=n;i++)
-		for(int j=1;j<=n;j++)
-	  	  if(i!=j)
-			dist[i][j]=OO;
-		  else dist[i][j]=0; 
-	for(int i=0;i<n;i++){
-		ll u,v,w;cin>>u>>v>>w;
-		dist[u][v]=w;
-	}
+	cin>>n;
+    ll m;cin>>m;//#of Edges
+    
+    for(int i=1;i<=n;i++)
+        for(int j=1;j<=n;j++)
+            if(i!=j)
+                dist[i][j]=OO;
+            else dist[i][j]=0;
+    for(int i=0;i<m;i++){
+        ll u,v,w;cin>>u>>v>>w;
+        dist[u][v]=min(w,dist[u][v]);
+        //dist[v][u]=min(w,dist[v][u]); //2 way route
+    }
 	floyed_warshal();
 }

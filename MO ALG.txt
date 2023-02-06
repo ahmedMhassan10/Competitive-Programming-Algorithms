@@ -1,0 +1,62 @@
+//used with offline querey (MO ALg) O((N+Q)sqrt(N))
+
+--->NOT with update operations
+--->10000 elements
+
+const ll NN=2e5+5,MM=1e6+5;
+int arr[NN], frq[MM], sz;
+ll tot;
+
+struct query {
+    int l, r, idx;
+};
+
+bool cmp(query &a, query &b) {
+    if (a.l / sz != b.l / sz)
+        return a.l / sz < b.l / sz;
+    return a.r < b.r;
+}
+
+void add(int x){
+    tot -= 1ll*arr[x]*frq[arr[x]]*frq[arr[x]];
+    frq[arr[x]]++;
+    tot += 1ll*arr[x]*frq[arr[x]]*frq[arr[x]];
+}
+
+void remove(int x){
+    tot -= 1ll*arr[x]*frq[arr[x]]*frq[arr[x]];
+    frq[arr[x]]--;
+    tot += 1ll*arr[x]*frq[arr[x]]*frq[arr[x]];
+}
+
+
+void solve(int inde) {
+    int n, q;
+    cin >> n >> q;
+    sz = (int) sqrt(n) + 1;
+    for (int i = 0; i < n; ++i) {
+        cin >> arr[i];
+    }
+    vector<query> v(q);
+    for (int i = 0; i < q; ++i) {
+        cin >> v[i].l >> v[i].r;
+        v[i].l--, v[i].r--;
+        v[i].idx = i;
+    }
+    sort(all(v), cmp);
+    vector<ll> ans(q);
+    int l = 0, r = -1;
+    for (auto x: v) {
+
+	// add and remove orders may change 
+        while (l > x.l)add(--l);
+        while (r < x.r)add(++r);
+        while (l < x.l)remove(l++);
+        while (r > x.r)remove(r--);
+        ans[x.idx] = tot;
+    }
+    for (int i = 0; i < q; ++i) {
+        cout << ans[i] << endl;
+    }
+
+}

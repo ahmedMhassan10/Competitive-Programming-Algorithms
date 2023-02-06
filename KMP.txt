@@ -33,3 +33,53 @@ void kmp(string &s,string &pat){
         }
     }
 }
+
+///////////////////////////////
+two way---->   pat@string    for every pat.size in fail 1 occur
+ ---->
+    kmp(pat,fail);
+    ll j=0;
+    for (int i = 0; i < x.size(); ++i) {
+        while (j > 0 && x[i] != pat[j])
+            j = fail[j - 1];
+        if (x[i] == pat[j])
+            j++;
+         if(j==pat.size()){
+             res.push_back(i-j+2);
+             j=fail[j-1];
+         }
+    }
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+2- longest pre in same suf----> last elemnt in fali arr
+
+3- longest suf pailndrom -----> rev x @ x  last element in fail arr  // when use @ kmp use to know الي اي درجة تشبة البداية should make reverse in front //
+
+4- what is min char add from end to make pail ----> as above find long suf pail and add other char 
+
+5- what is min rept for string to make larger string -->fail arr wil be as 0000 12345678 -->abcdabcdabcd ---> len -last elemt =r && len%r==0
+
+7- for each pre count his freq in another strin --->
+
+8-find second and third longest pre suf---->
+    while(x>0) {
+        x = fail[x - 1];
+    }
+vip 6- to get freq of all prefix ---->
+
+    vi fail(x.size(),0);
+    kmp(x,fail);
+    vi mp(x.size()+1,0);
+    for (int i = 0; i <fail.size() ; ++i) {
+        mp[fail[i]]++;
+    }
+    for (int i = fail.size()-1; i >0 ; --i) {  // mp arr start from one ---> mp[z] z is length of prefix;
+        mp[fail[i-1]]+=mp[i];
+    }
+
+to check if any prefix is a suffix we can go through of all pre suf by useing that--> 8 -->
+8-find second and third longest pre suf---->
+                 while(x>0) {
+                          x = fail[x - 1];
+}

@@ -100,8 +100,8 @@ bool anyCycle = 0;
 int timer = 0;
 
 const int N = 1e4+10;
-map<ll, vector < int > >adj;
-map<ll,bool> vis;
+vector<vector < int > >adj(N);
+vector<bool>vis(N,0);
 void dfs( int node)
 {
     vis[node] = true;
