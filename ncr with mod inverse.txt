@@ -1,62 +1,70 @@
+ll fact[N], inv[N];
 
-//////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-#include <bits/stdc++.h>
-
-using namespace std;
-#define ll long long
-#define ld long double
-#define F first
-#define S second
-#define endl '\n'
-#define Tsetso ios_base::sync_with_stdio(0), cin.tie(0), cout.tie(0);
-
-const int N = 1e5+10, M = 1050, inf = 1e6, mod = 1e9+7;
-int add ( int a , int b)
+ll add ( ll a , ll b, ll mod)
 {
     return (a + b) % mod;
 }
-int mul ( int a , int b)
+ll sub ( ll a , ll b, ll mod)
 {
-    return 1LL * a * b % mod;
+    return (a - b +mod) % mod;
 }
-int fp( int b , int p)
+ll mul ( ll a , ll b, ll mod)
+{
+    return (1LL * a * b) % mod;
+}
+ll fop( ll b , ll p, ll mod)
 {
     if(!p)
         return 1;
-    int temp = fp(b,p/2);
-    temp = mul(temp,temp);
+    ll temp = fop(b,p/2,mod)%mod;
+    temp = mul(temp,temp,mod);
     if(p&1)
-        temp = mul(temp,b);
-    return temp;
+        temp = mul(temp,b,mod);
+    return temp%mod;
 }
-int fact[N], inv[N];
-int nCr( int n , int r)
+ll nCr( ll n , ll r, ll mod)
 {
-    return mul(fact[n],mul(inv[n-r],inv[r]));
+    return mul(fact[n],mul(inv[n-r],inv[r],mod),mod);
 }
-void testCase() {
-    ll n , k ;
-    cin >> n >> k;
-    fact[0] = inv[0] = 1;
-    for ( int i = 1 ; i <= n ; i++)
+ll nPr( ll n , ll r, ll mod)
+{
+    return mul(nCr(n,r,mod),fact[r],mod);
+}
+
+void testCase(ll mod,ll n=N-1) {
+   /* fact[0] = inv[0] = 1;
+    for ( ll i = 1 ; i <= n ; i++)
     {
-        fact[i] = mul(i,fact[i-1]);
-        inv[i] = fp(fact[i],mod-2);
+        fact[i] = mul(i,fact[i-1],mod);
+        inv[i] = fop(fact[i],mod-2,mod);
+    }*/
+    fact[0] = fact[1] = inv[0] = inv[1] = 1;
+    for (int i = 2; i <= n; i++)
+    {
+        fact[i] = fact[i - 1] * i % mod;
+        inv[i] = inv[mod % i] * (mod - mod / i) % mod;
     }
-    int ans = fp(2,n);
-    if( n <= k)
-        return cout << ans << '\n',void();
-    for ( int i = n ; i > k; i--)
-        ans = add(ans,mod-nCr(n,i));
-    cout << ans << '\n';
+    for (int i = 2; i <= n; i++)
+        inv[i] = inv[i] * inv[i - 1] % mod;
 }
-int32_t main()
+
+
+/////////////////////////////////////////////////////
+using pascal 
+
+
+ll ncr[50][50];
+
+void pre() {
+    for (ll i = 0; i < 50; i++)
+        ncr[i][0] = 1;
+    for (ll i = 1; i < 50; i++) {
+        for (ll j = 1; j <= i; j++)
+            ncr[i][j] = ncr[i - 1][j - 1] + ncr[i - 1][j];
+    }
+}
+ll nCr( ll n , ll r)
 {
-    Tsetso
-    int t = 1;
-//    cin >> t;
-    while(t--)
-        testCase();
+    return ncr[n][r];
 }
+

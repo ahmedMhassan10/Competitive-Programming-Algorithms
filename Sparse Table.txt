@@ -1,7 +1,7 @@
 const ll OO = 1e9, mod = 1e9 + 7,mod2=1e9+9, N = 5e5+10,M=25;
 
 int sp[N][M] , sp2[N][M] , a[N] , lg[N]  ,n;
-void buildSparse(){
+void buildSparse(){/// one based
     lg[1] = 0 ;
     for(int i =2;i <=n ; i++){
         lg[i] = lg[i/2]+1;
@@ -12,7 +12,8 @@ void buildSparse(){
     }
     for(int i = 1;i<M ; i++){
         for(int j = 0 ; j + (1<<i)<= n ;j++){
-            sp[j][i] = max(sp[j][i-1], sp[j+(1<<(i-1))][i-1]);            sp2[j][i] = min(sp2[j][i-1], sp2[j+(1<<(i-1))][i-1]);
+            sp[j][i] = max(sp[j][i-1], sp[j+(1<<(i-1))][i-1]); 
+            sp2[j][i] = min(sp2[j][i-1], sp2[j+(1<<(i-1))][i-1]);
 
         }
     }
