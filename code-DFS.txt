@@ -111,6 +111,23 @@ void dfs( int node)
 }
 // to get tobologicla sort put the node in stack in tha
 
+// get Euler tour ind intialize with Number of nodes
+
+vector<vector < int > >adj(N);
+vector<bool>vis(N,0);
+vll st(N,0),en(N,0);
+ll ind=N;
+void dfs( int node,int par)
+{
+    vis[node] = true;
+    st[node]=en[node]=ind--;
+    for ( auto child : adj[node])
+        if(vis[child] == false)
+        {
+            dfs(child,node);
+            st[node]=min(st[node],st[child]);
+        }
+}
 
 //if u work with directed graph ---->> make vector of pair to save indegree of each node and sort it the start the dfs from lower degree to greater one.  
 
