@@ -275,8 +275,10 @@ ll solve(int first,int second){
 
 
 -->dp  on masks
+
 int n , m , q , x[50] , y[50];
 int dp[12][1025];
+
 int solve( int idx , int msk) // n * n * 2^n = 10 * 10 * 1024 = 1e5 ,
 {
     // base case
@@ -294,6 +296,7 @@ int solve( int idx , int msk) // n * n * 2^n = 10 * 10 * 1024 = 1e5 ,
     }
     return ret;
 }
+
 void testCase() {
     cin >> n >> m;
     cin >> x[0] >> y[0] >> q;
@@ -302,4 +305,23 @@ void testCase() {
     memset(dp,-1,sizeof dp);
     cout << "The shortest path has length ";
     cout << solve(0,0) << '\n';
+}
+//////////////////
+ll n;
+vi a(N);
+ll dp[15][33000];
+ll rec(ll last,ll msk) {
+    if (dp[last][msk] != -1)return dp[last][msk];
+    if (msk == (1 << n) - 1) {
+        return 1ll;
+    }
+    ll opt1 = 0;
+    for (int i = 0; i < n; ++i) {
+        if (last == -1 && (msk & (1 << (i)))==0) {
+        
+        } else if((msk & (1 << (i)))==0 && (a[last]%a[i]==0 || a[i]%a[last]==0)){
+            
+        }
+    }
+    return dp[last][msk] = opt1;
 }
