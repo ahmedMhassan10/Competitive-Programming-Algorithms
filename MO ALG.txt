@@ -4,7 +4,7 @@
 --->10000 elements
 
 const ll NN=2e5+5,MM=1e6+5;
-int arr[NN], frq[MM], sz;
+int arr[NN], frq[MM], sz=555;
 ll tot;
 
 struct query {
@@ -33,7 +33,7 @@ void remove(int x){
 void solve(int inde) {
     int n, q;
     cin >> n >> q;
-    sz = (int) sqrt(n) + 1;
+   // sz = (int) sqrt(n) + 1; جرب مرة كدة ومرة ب  root(NN);
     for (int i = 0; i < n; ++i) {
         cin >> arr[i];
     }

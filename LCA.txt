@@ -19,7 +19,7 @@ void dfs( int node , int par)
     }
 }
  
-int findKthAncestor( int u , int k)
+int findKthAncestor( int u , int k)		//return zero if k > depth --> call dfs(1,0) in main
 {
     for ( int j = M-1 ; j >= 0 ; j--)
         if(k&(1<<j))
