@@ -38,7 +38,7 @@ void clearFromValues(int node){   /// clear un keeped subtree(changable)
         if(!visited[item])clearFromValues(item);
     }
 }
-void dfs(int node,int par,bool keep){// all sack problems has same imp but some changes in insertion implementation 
+void dfs(int node,int par,bool keep){    // all sack problems has same imp but some changes in insertion implementation 
 
 
     int maxSz=-1,greatNode=-1;

@@ -4,16 +4,15 @@
 Tarjan to get SCC
 
 
-vector< vector<int> > adjList, comps, dagList;
-vector<int> inStack, lowLink, dfn, comp, inDeg, outDeg;
+vector< vector<int> > adjList, comps;
+vector<int> inStack, lowLink, dfn, comp;
 stack<int> stk;
-int ndfn, cntSrc, cntSnk;
-
+int ndfn;
 void tarjan(int node) {
     lowLink[node] = dfn[node] = ndfn++, inStack[node] = 1;
     stk.push(node);
 
-    rep(i, adjList[node]) {
+    for(int i=0;i< adjList[node].size();i++) {
         int ch = adjList[node][i];
         if (dfn[ch] == -1) {
             tarjan(ch);
@@ -28,16 +27,14 @@ void tarjan(int node) {
         while (x != node) {
             x = stk.top(), stk.pop(), inStack[x] = 0;
             comps.back().push_back(x);
-            comp[x] = siz(comps) - 1;
+            comp[x] = (comps.size()) - 1;
         }
     }
 }
 
 
-
 void scc() {
-    int n = siz(adjList);
-
+    int n = (adjList.size());
     inStack.clear();	inStack.resize(n);
     lowLink.clear();	lowLink.resize(n);
     dfn.clear();		dfn.resize(n, -1);
@@ -46,38 +43,39 @@ void scc() {
     comp.clear(), comp.resize(n);
     comps.clear();
 
-    fo(i, n) if (dfn[i] == -1)
-        tarjan(i);
+    for(int i=0;i< n;i++)
+        if (dfn[i] == -1)
+            tarjan(i);
 }
-
-
+vector<vector<int>>dagList;
+vector<int> inDeg, outDeg;
+int cntSrc, cntSnk;
 void computeCompGraph() {
-	int csz = comps.size(), cntSrc = csz, cntSnk = csz;
+    int csz = comps.size(), cntSrc = csz, cntSnk = csz;
 
-	outDeg.clear();		outDeg.resize(csz);
-	inDeg.clear();		inDeg.resize(comps.size());
-	dagList.clear();		dagList.resize(csz);	//will contain duplicates
+    outDeg.clear();		outDeg.resize(csz);
+    inDeg.clear();		inDeg.resize(comps.size());
+    dagList.clear();		dagList.resize(csz);	//will contain duplicates
 
-	for (int i = 0; i < sz(adjList); i++)
-		for (int j = 0; j < sz(adjList[i]); j++) {
-			int k = adjList[i][j];
-			if (comp[k] != comp[i]) {
-				dagList[comp[i]].push_back(comp[k]);	//reverse
-				if (!(inDeg[comp[k]]++))		cntSrc--;
-				if (!(outDeg[comp[i]]++))		cntSnk--;
-			} else
-				;// this edge is for a component comp[k]
-		}
+    for (int i = 0; i < (adjList.size()); i++)
+        for (int j = 0; j < (adjList[i].size()); j++) {
+            int k = adjList[i][j];
+            if (comp[k] != comp[i]) {
+                dagList[comp[i]].push_back(comp[k]);	//reverse
+                if (!(inDeg[comp[k]]++))	cntSrc--;
+                if (!(outDeg[comp[i]]++))	cntSnk--;
+            } else
+                ;// this edge is for a component comp[k]
+        }
 
-	/* Min edges to convert DAG to one cycle
-	if (comps.size() == 1)
-		cout << "0\n";
-	else {
-		cout << max(cntSrc, cntSnk) << "\n";
-	}
-	*/
+    // Min edges to convert DAG to one cycle
+    if (comps.size() == 1)
+        cout << "0\n";
+    else {
+        cout << max(cntSrc, cntSnk) << "\n";
+    }
+    
 }
-
 
 int main() {
 	freopen("b.in", "rt", stdin);
@@ -106,96 +104,204 @@ int main() {
 	return 0;
 }
 
-	
-	
+/////////////////////////////////////////////////////////////////////////////////
+--->2-sat problem :)
 
+
+#define NOT(x)    (1^(x)) // Switch between even odd: (0, 1), (2, 3).. -->(i,!i)===(i,i^1)
+#define getValue(x) (2*x) // get the hashed value in the algorithm
+
+int n, m, ndfn;
+vector< vector<int> > adjList, comps, dagList;
+vector<int> inStack, lowLink, dfn, comp, assigned_val, cmp_root_node;
+stack<int> stk;
+
+void tarjan(int node) {
+    lowLink[node] = dfn[node] = ndfn++, inStack[node] = 1;
+    stk.push(node);
+
+    for(int i=0;i< adjList[node].size();i++) {
+        int ch = adjList[node][i];
+        if (dfn[ch] == -1) {
+            tarjan(ch);
+            lowLink[node] = min(lowLink[node], lowLink[ch]);
+        } else if (inStack[ch])
+            lowLink[node] = min(lowLink[node], dfn[ch]);
+    }
+
+    if (lowLink[node] == dfn[node]) {
+        comps.push_back(vector<int> ());
+        int x = -1;
+        while (x != node) {
+            x = stk.top(), stk.pop(), inStack[x] = 0;
+            comps.back().push_back(x);
+            comp[x] = comps.size() - 1;
+        }
+        cmp_root_node[ comp[node] ] = node;		// ***
+    }
+}
+
+void scc() {
+    int n = (adjList.size());
+
+    inStack.clear();		inStack.resize(n);
+    lowLink.clear();		lowLink.resize(n);
+    assigned_val.clear();	assigned_val.resize(n);
+    cmp_root_node.clear();		cmp_root_node.resize(n);
+    dfn.clear();			dfn.resize(n, -1);
+    ndfn = 0;
+
+    comp.clear(), comp.resize(n);
+    comps.clear();
+
+    for(int i=0;i< n;i++)
+        if (dfn[i] == -1)
+            tarjan(i);
+}
+
+// acceptable values: (0, 1), (1, 0), (1, 1)
+void add_or(int a, int b)
+{
+    adjList[NOT(a)].push_back(b);
+    adjList[NOT(b)].push_back(a);
+}
+
+// acceptable values: (0, 1), (1, 0)
+void add_or_not_both(int a, int b) //--> for some specific problem
+{
+    // CNF: (a v b) & (!a v !b)  ==> E.g. can't be true for (1, 1) / (0, 0)
+    add_or(a, b);
+    add_or(NOT(a), NOT(b));
+}
+
+void force_value(int i, bool b)// to force node i to be true or force
+{
+    if(b)
+        adjList[NOT(i)].push_back(i);
+    else
+        adjList[i].push_back(NOT(i));
+}
+
+bool is_solvable() // check if there is solution
+{
+    for(int i = 0 ; i < n ; i += 2)
+        if( comp[i] == comp[NOT(i)] )
+            return false;
+    return true;
+}
+
+void assign_values()
+{
+    vector<int> comp_assigned_value(comps.size(), -1);
+
+    for(int i=0; i<comps.size();i++) {
+        if (comp_assigned_value[i] == -1){
+            comp_assigned_value[i] = 1;
+            int not_ithcomp = comp[ NOT(cmp_root_node[i]) ];
+            comp_assigned_value[ not_ithcomp ] = 0;
+        }
+    }
+
+    for(int i=0;i< n;i++)
+         assigned_val[i] = comp_assigned_value[ comp[i] ];
+}
+
+void func(int index){
+    cin>>m>>n;
+    n=2*n;
+    adjList.clear();
+    adjList.resize(n);
+
+    for (int i = 0; i <m ; ++i) {
+        char ch1,ch2;
+        int a,b;
+        cin>>ch1>>a>>ch2>>b;
+        a--,b--;
+        a= getValue(a);
+        b= getValue(b);
+        if(ch1=='-')a= NOT(a);
+        if(ch2=='-')b= NOT(b);
+        add_or(a, b);
+    }
+    scc();
+    if (!is_solvable())
+    {
+        cout<<"IMPOSSIBLE\n";
+        return;
+    }
+    assign_values();	// solution in assign_values array
+    for (int i = 0; i < n; i+=2) {
+        if(assigned_val[i]==1){
+            cout<<"+ ";
+        }else {
+            cout<<"- ";
+        }
+    }
+}
+/////////////////////////////////////////////////////////////////////////////////
 // Kosaraju’s algorithm
-// http://www.geeksforgeeks.org/strongly-connected-components/
-void dfs_topsort(vvi& adj, vector<bool>& used, vi& topsort, int node)
+void dfs_topsort(vector<vector<int>>& adj, vector<bool>& used, vector<int>& topsort, int node)
 {
-	int i;
-	used[node] = true;
-	for (i=0;i<sz(adj[node]); ++i)
-		if (!used[ adj[node][i] ])
-			dfs_topsort(adj, used, topsort, adj[node][i]);
-	topsort.push_back(node);
+    int i;
+    used[node] = true;
+    for (i=0;i<(adj[node].size()); ++i)
+        if (!used[ adj[node][i] ])
+            dfs_topsort(adj, used, topsort, adj[node][i]);
+    topsort.push_back(node);
 }
 
-void dfs_scc(vvi& transpose, vector<bool>& used, vi& scc, int node)
+void dfs_scc(vector<vector<int>>& transpose, vector<bool>& used, vector<int>& scc, int node)
 {
-	int i;
-	used[node] = true;
-	for (i=0;i<sz(transpose[node]) ; ++i)
-		if (!used[transpose[node][i]])
-		{
-			scc[transpose[node][i]] = scc[node];
-			dfs_scc(transpose, used, scc, transpose[node][i]);
-		}
+    int i;
+    used[node] = true;
+    for (i=0;i<(transpose[node].size()) ; ++i)
+        if (!used[transpose[node][i]])
+        {
+            scc[transpose[node][i]] = scc[node];
+            dfs_scc(transpose, used, scc, transpose[node][i]);
+        }
 }
+void func(int index){
+    int n, m, from, to;
+    cin>>n>>m;
+    vector<vector<int>> adj(n), transpose(n);
+    vector<int> scc(n), numof_scc, topsort;
+    vector<bool> used(n, false), used2(n, false);
 
-void SCC_main()	//Kosaraju's algorithm O(E+V)
-{
-	int v, e, from, to;
+    for(int i=0;i< m;i++) {
+        cin>>from>>to;
+        adj[from-1].push_back(to-1);
+        transpose[to-1].push_back(from-1);
+    }
 
-	cin>>v>>e;
-	vvi adj(v), transpose(v);
-	vi scc(v), numof_scc, topsort;
-	vector<bool> used(v, false), used2(v, false);
+    for(int i=0;i< n;i++)
+        if (!used[i])
+            dfs_topsort(adj, used, topsort, i);
 
-	lp(i, e) {
-		cin>>from>>to;
-		adj[from-1].push_back(to-1);
-		transpose[to-1].push_back(from-1);
- 	}
+    for(int j= n-1;j>= 0;j--) //Start from end as dfs_topsort reverse them.
+    {
+        int i = topsort[j];
+        if (!used2[i]) {
+            numof_scc.push_back(i);  scc[i] = i; //Mark as a SCC
+            dfs_scc(transpose, used2, scc, i);
+        }
+    }
 
-	lp(i, v) if (!used[i]) dfs_topsort(adj, used, topsort, i);
+    sort( numof_scc.begin(),numof_scc.end() );
+    numof_scc = vector<int>(numof_scc.begin(), unique(numof_scc.begin(),numof_scc.end()));
 
-	lpd(j, v-1, 0) //Start from end as dfs_topsort reverse them.
-	{
-		int i = topsort[j];
-		if (!used2[i]) {
-			numof_scc.push_back(i);  scc[i] = i; //Mark as a SCC
-			dfs_scc(transpose, used2, scc, i);
-		}
-	}
+    cout<<"# SCC " <<numof_scc.size()<<"\n";
 
-	sort( all(numof_scc) );
-	numof_scc = vi(numof_scc.begin(), unique(all(numof_scc)));
+    vector<vector<int>> comps(n);
+    for(int i=0;i< n;i++) comps[scc[i]].push_back(i);
 
-	cout<<"# SCC " <<numof_scc.size()<<"\n";
-
-	vvi comps(v);
-	lp(i, v) comps[scc[i]].push_back(i);
-
-	lp(i, v) {
-		lp(j, comps[i].size()) cout<<comps[i][j]+1<<" ";
-		if(comps[i].size() != 0)	cout<<"\n";
-	}
+    for(int i=0;i< n;i++) {
+        for(int j=0; j<comps[i].size();j++)
+            cout<<comps[i][j]+1<<" ";
+        if(comps[i].size() != 0)
+            cout<<"\n";
+    }
 }
-
-
-
-// Simple one...N^3
-void SCC2(bool reach[MAX][MAX], int n, bool compGraph[MAX][MAX], int & m)
-{
-	rep(k, n) rep(i, n)	rep(j, n)	// Warshl Transitive clousre
-		reach[i][j] |= (reach[i][k] && reach[k][j]);
-
-	vector<int> comp(n, -1);
-
-	int next = 0;
-	rep(i, n) if(comp[i]==-1) {
-		comp[i] = next++;
-		rep(j, n) if(reach[i][j] && reach[j][i])	comp[j] = comp[i];
-	}
-
-	rep(i, n)	rep(j, n)	if(reach[i][j])
-		compGraph[ comp[i] ][ comp[j] ] = 1;	// DAG
-
-	m = next;
-}
-
-
 
 
 ////////////////////////////////////////////////////////////////////

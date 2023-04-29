@@ -1,0 +1,57 @@
+/// save distances 
+    ll n;cin>>n;
+    int a[n], mxl[n], mxr[n], mnl[n], mnr[n];
+    for(int i = 0; i < n; i++) cin >> a[i];
+    stack<int> s1, s2, s3, s4;
+    for(int i = 0; i < n; i++) {
+        while(!s1.empty() && a[s1.top()] < a[i])
+            s1.pop();
+        while(!s2.empty() && a[s2.top()] > a[i])
+            s2.pop();
+        while(!s3.empty() && a[s3.top()] < a[n - 1 - i])
+            s3.pop();
+        while(!s4.empty() && a[s4.top()] > a[n - 1 - i])
+            s4.pop();
+        mxl[i] = s1.empty() ? -1 : i - s1.top();// distance
+        mnl[i] = s2.empty() ? -1: i - s2.top();//distance
+        mxr[n - 1 - i] = s3.empty() ? -1: s3.top() - (n - 1 - i);//distance
+        mnr[n - 1 - i] = s4.empty() ? -1: s4.top() - (n - 1 - i);//distance
+        s1.push(i);
+        s2.push(i);
+        s3.push(n - 1 - i);
+        s4.push(n - 1 - i);
+    }
+
+
+/// save values 
+
+    ll n;cin>>n;
+    int a[n], mxl[n], mxr[n], mnl[n], mnr[n];
+    for(int i = 0; i < n; i++) cin >> a[i];
+    stack<int> s1, s2, s3, s4;
+    for(int i = 0; i < n; i++) {
+        while(!s1.empty() && a[s1.top()] < a[i])
+            s1.pop();
+
+        while(!s2.empty() && a[s2.top()] > a[i])
+            s2.pop();
+
+        while(!s3.empty() && a[s3.top()] < a[n - 1 - i])
+            s3.pop();
+
+        while(!s4.empty() && a[s4.top()] > a[n - 1 - i])
+            s4.pop();
+
+        mxl[i] = s1.empty() ? -1 : a[s1.top()];// value
+
+        mnl[i] = s2.empty() ? -1 : a[s2.top()];// value
+
+        mxr[n - 1 - i] = s3.empty() ? -1 : a[s3.top()] ;// value
+
+        mnr[n - 1 - i] = s4.empty() ? -1 : a[s4.top()] ;// value
+
+        s1.push(i);
+        s2.push(i);
+        s3.push(n - 1 - i);
+        s4.push(n - 1 - i);
+    }

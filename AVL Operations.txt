@@ -1,0 +1,149 @@
+struct node{
+    node *left, *right;
+    int value, freq, height;
+    static node* sentinel;				// one NULL for all tree elements
+    node(){
+        memset(this, 0, sizeof *this); //initialize all member variables to zero
+    }
+    bool isNull(){
+        bool tr=(value==0&&freq==0&&height==0);
+        return tr;
+    }
+    node(int v){
+        value = v;
+        freq = height = 1;
+        left = right = sentinel;
+    }
+
+    void updateHeight(){
+        height = 1 + max(left->height, right->height);
+    }
+
+    int balanceFactor(){
+        return left->height - right->height;
+    }
+};
+
+node* node::sentinel = new node();
+
+node* rightRotation(node* Q){
+
+    node* P = Q->left;
+    Q->left = P->right;
+    P->right = Q;
+    Q->updateHeight();
+    P->updateHeight();
+    return P;
+}
+
+node* leftRotation(node* P){
+
+    node* Q = P->right;
+    P->right = Q->left;
+    Q->left = P;
+    P->updateHeight();
+    Q->updateHeight();
+    return Q;
+}
+
+node* balance(node* root){
+
+    if(root->balanceFactor() == 2)	// Left
+    {
+        if(root->left->balanceFactor() == -1)	// Left Right?
+            root->left = leftRotation(root->left);	// Convert to Left Left
+
+        root = rightRotation(root);	// Balance
+    }
+    else if(root->balanceFactor() == -2)
+    {
+        if(root->right->balanceFactor() == 1)
+            root->right = rightRotation(root->right);
+
+        root = leftRotation(root);
+    }
+    return root;
+}
+
+node* insert(node* root, int val){
+
+    //Normal BST Insert
+    if(root->isNull())
+        return new node(val);
+
+    if(val == root->value){// handle the repetition of some value
+        root->freq++;
+        return root;
+    }
+
+    if(val < root->value)
+        root->left = insert(root->left, val);
+    else
+        root->right = insert(root->right, val);
+
+    //AVL Change
+    root->updateHeight();
+    root = balance(root);
+    return root;
+}
+node* balanceCheck(node* root){
+    if(root->left!=node::sentinel){
+       root->left= balanceCheck(root->left);
+    }
+    root->updateHeight();
+    root= balance(root);
+    return root;
+}
+node* delNode(node* root,int val){
+    if(root==node::sentinel)return node::sentinel;
+    if(root->value==val){
+        if(root->freq>1){
+            root->freq--;
+            root->updateHeight();
+            root = balance(root);
+            return root;
+        }else if(root->right==node::sentinel&&root->left==node::sentinel) {
+            return node::sentinel;
+        }else if(root->right!=node::sentinel&&root->left!=node::sentinel){
+            node* s=root->right;
+            node* last=root;
+            while (s->left!=node::sentinel){
+                last=s;
+                s=s->left;
+            }
+            if(last->value!=root->value)
+            {
+                last->left=s->right;
+                s->right=root->right;
+            }
+            s->left=root->left;
+            root=s;
+            root->updateHeight();
+            root = balance(root);
+            if(root->right!=node::sentinel)
+            root->right= balanceCheck(root->right);
+            return root;
+        }else{
+            if(root->right==node::sentinel){
+                return root->left;
+            }else{
+                return root->right;
+            }
+        }
+    }
+    if(val < root->value)
+        root->left = delNode(root->left, val);
+    else
+        root->right = delNode(root->right, val);
+    root->updateHeight();
+    root = balance(root);
+    return root;
+}
+void func(int ind) {
+    node* root=new node(1);
+    fp(i,2,9){
+        root= insert(root,i);
+    }
+    root= delNode(root,8);
+    root;
+}

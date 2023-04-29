@@ -78,7 +78,58 @@ void testCase()
     Dijkstra(src);
 }
 
+/////////////////////////////////////////
+calculate minimum distance with spacific sale
+ll n;
+vector<vector < pair < ll, ll> >> g(N),gg(N);
+void Dijkstra( ll src,vll&dist,vector<vector < pair < ll, ll> >> &g)
+{
+    dist.assign(n+1,OO);
+    dist[src] = 0;
+    //  distance node
+    priority_queue< pair < ll, ll> > pq;
+    pq.push({0,src});
+    while(!pq.empty())
+    {
+        ll node = pq.top().second , distance = -pq.top().first;
+        pq.pop();
+        if(distance > dist[node])
+            continue;
+        for(auto ch : g[node])
+        {
+            if(dist[node] + ch.second < dist[ch.first])
+            {
+                dist[ch.first] = dist[node] + ch.second;
+                pq.push({-dist[ch.first],ch.first});
+            }
+        }
+    }
+}
+struct edge{
+    ll st,en,w;
+};
+void func(int ind) {
+    ll m;
+    vector<edge>edges;
+    cin >> n >> m ;
+    for ( ll i = 0 ; i < m ;i++)
+    {
+        ll u, v ,w;
+        cin >> u >> v >> w;
+        edges.push_back({u,v,w});
+        g[u].push_back({v,w});
+        gg[v].push_back({u,w});
 
+    }
+    vll fDist(n+4,0),sDist(n+4,0);
+    Dijkstra(1,fDist,g);
+    Dijkstra(n,sDist,gg);
+    ll res=min(fDist[n],sDist[1]);
+    fvec(item,edges){
+        res=min(res,fDist[item.st]+sDist[item.en]+item.w/2);//-->condition
+    }
+    cout<<res<<'\n';
+}
 
 ////if we want to run multisource dijkstra we pass more than one src--> want more than one node to act as source the make thier dist ===0
 for matrix

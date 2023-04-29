@@ -1,0 +1,512 @@
+#include <iostream>
+#include<bits/stdc++.h>
+using namespace std;
+#define all(v)				((v).begin()), ((v).end())
+
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////maximum subarray if there is negative 
+										// if only postive azn all array
+int best = 0, sum = 0;
+for (int k = 0; k < n; k++) {
+sum = max(array[k],sum+array[k]);
+best = max(best,sum);
+}
+cout << best << "\n";
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+					//NEXT
+
+
+//////////////////////////////////////////////////////////////////////////////////   generate subset ;
+
+
+for (int b = 0; b < (1<<n); b++) {
+vector<long long> subset;
+        for (int i = 0; i < n; i++) {
+                if (b&(1<<i)) subset.push_back(a[i]);    //  if b begin from 0 phay include if 1 oppsite   a is vector we get subset to it ;
+        }  
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+                                                    
+                                           //  NEXT                     
+
+
+////////////////////////////////////////////////////////////////////////////////// generate perme order(n*fact(n))
+ do{
+        for(int i=0;i<a.size();i++){
+            cout<<a[i]<<" ";
+        }
+        cout<<endl;                             // here we can do any thing in any perm
+
+    }while(next_permutation(all(a)));
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////// 
+
+
+
+                                                        //NEXT
+                                                        
+                                                       
+ ///////////////////////////////////////////////////////////////////////////////////////////////////maximum path from s to destina  right down only                                                         
+  bool valid(int i ,int j,int n, int  m){
+        if(i>=0 && j>=0 && i<n && j<m){
+            return true;
+        }
+        else{
+            return false;
+        }
+ }
+
+ ll max_path(vii &grid,int r,int c,int n,int m){
+    if(!valid(r,c,n,m)){
+        return 0;                               // valid vip: if you want to change destination play in valid fun i<  && j<
+    }
+
+  	ll path1 = max_path(grid,r, c+1,n,m);	 // right
+	ll path2 = max_path(grid,r+1,c,n,m);	 // down
+
+	return grid[r][c]+max(path1,path2);
+
+        // vip in this fun you dont have to make visited array as it right or down;
+        
+        // call (grid,0,0,n,m)
+
+ }
+                                                                                                                                                             
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+								//NEXT
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////there_is_away from S to E  and X is block 
+ 
+
+  bool valid(int i ,int j,int n, int  m){
+        if(i>=0 && j>=0 && i<n && j<m){
+            return true;
+        }
+        else{
+            return false;
+        }
+ }
+
+ bool there_is_away(vector<vector<char>> &grid,  vii &visited  ,int r, int c,  int n, int m){
+
+        if(!valid(r,c,n,m) || visited[r][c]==1 ||grid[r][c]=='X' )return false; //   check valid and make any char as block
+
+         visited[r][c] = 1;
+
+
+        if(grid[r][c]=='E') return true;                    // make any char destination
+
+        if(there_is_away(grid,visited,r, c-1,n,m)) return true;  	// search up		***// if we want to know long of path make global vary
+            if(there_is_away(grid,visited,r, c+1,n,m)) return true;  	 // search down		***// and put him in 4 if before return;
+                if(there_is_away(grid,visited,r-1, c,n,m)) return true;   // search left
+                    if(there_is_away(grid,visited,r+1, c,n,m)) return true; // search right
+
+       return false;
+
+ }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+								//NEXT
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////count num of path .
+
+
+
+ll num_of_path=0;   ///  global vary important ;
+
+void count_num_paths(vector<vector<char>> &grid,int r, int c,int n,int m)		// Recursion State: r, c
+{
+    if( grid[r][c] =='E')
+    {
+    	num_of_path++;
+    	return;
+    }
+
+
+    int dx[] = {0, 1, 0, -1};
+    int dy[] = {1, 0, -1, 0};
+
+    for(int d=0;d<4;d++){
+
+    	int nr = r+dx[d];
+    	int nc = c+dy[d];
+
+    	if(valid(nr, nc,n,m) && grid[nr][nc]!='X'){   // block X
+
+    		if(grid[nr][nc] != 'E')			// do
+    			grid[nr][nc] = 'X';
+
+    		count_num_paths(grid, nr, nc, n, m);			// rec
+
+    		if(grid[nr][nc] != 'E')			// undo
+    		    grid[nr][nc] = '.';
+    	}
+    }
+}
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+							//NEXT
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////// dfs for array agj mat
+
+
+vii adjmatrix;
+bool visted[oo][oo] ={false};
+
+void dfs(ll r,ll c,ll n,ll m){
+ 
+    if(!valid(r,c,n,m) || visted[r][c] || adjlist[r][c]=='X' ) return;
+        visted[r][c]=true;
+ 
+        // proces in each  
+ 
+        dfs(r, c-1,n,m);
+            dfs(r, c+1,n,m)   ;
+                dfs(r-1, c,n,m);
+                    dfs(r+1, c,n,m);
+ 
+ 
+}
+ 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+							//NEXT
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////// bfs for array adj mat
+
+
+
+
+
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+							//NEXT
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////dfs for connected graph adj list
+
+
+bool visited[oo];
+vii adjlist; // num of node    ///imp make vii a(n+1) and adjlist=a;   ///******
+
+void dfs(int s){
+    if(visited[s])return;
+    visited[s]=true;
+
+		// prosses 
+	
+    for(auto u :adjlist[s]){
+        dfs(u);
+    }
+
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+						// NEXT
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////// bfs for connected graph adj list
+bool visited[oo];
+int  distance[oo];
+vii adjlist; // num of node    ///imp make vii a(n+1) and adjlist=a;   ///******
+queue<int> q;
+
+void bfs(int s){
+				/////    if(visite[s]==true)return;    vip***** for un connected 
+	q.push(s);
+	visited[s]=true;
+	distance[s]=0;
+	while(!q.empty()){
+
+            int x=q.front(); q.pop();
+
+
+            // pross
+
+            for(auto u:adjlist[x]){
+                if(visited[u])continue ;
+                visited[u]=true;
+                distance[u]=distance[x]+1;
+                q.push(u);
+            }
+	}
+}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+								//NEXT
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////  count of component
+ll count_component=0;
+for(int i=1;i<n+1;i++){
+            if(!visited[i])
+                    {
+                        dfs(i);     ///////////////////////////////////////dfs of array matrix or of graph adj list;
+                        count_component++;
+                    }
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+						// NEXT
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////// how  to take undirct adjlist 
+
+ll n,m;
+cin>>n>>m;
+vii a(n+1);
+adjlist=a;
+ 									
+foor(i,0,m){
+ll  x,y;
+cin>>x>>y;
+adjlist[x].push_back(y);
+adjlist[y].push_back(x);
+ 
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+				// NEXT
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////bipartite or not 
+
+
+
+
+vii adjlist; // num of node    ///imp make vii a(n+1) and adjlist=a;   ///******
+
+bool isBipartite(int V)/////  num of nodes   not start
+{
+    // vector to store colour of vertex
+    // assigning all to -1 i.e. uncoloured
+    // colours are either 0 or 1
+    // for understanding take 0 as red and 1 as blue
+    vector<int> col(V+1, -1);
+
+    // queue for BFS storing {vertex , colour}
+    queue<pair<int, int> > q;
+
+    //loop incase graph is not connected
+    for (int i = 1; i <= V; i++) {
+
+        //if not coloured
+        if (col[i] == -1) {
+
+            //colouring with 0 i.e. red
+            q.push({ i, 0 });
+            col[i] = 0;
+
+            while (!q.empty()) {
+                pair<int, int> p = q.front();
+                q.pop();
+
+                //current vertex
+                int v = p.first;
+                //colour of current vertex
+                int c = p.second;
+
+                //traversing vertexes connected to current vertex
+                for (int j : adjlist[v]) {
+
+                    //if already coloured with parent vertex color
+                    //then bipartite graph is not possible
+                    if (col[j] == c)
+                        return 0;
+
+                    //if uncoloured
+                    if (col[j] == -1) {
+                        //colouring with opposite color to that of parent
+                        col[j] = (c) ? 0 : 1;
+                        q.push({ j, col[j] });
+                    }
+                }
+            }
+        }
+    }
+    //if all vertexes are coloured such that
+    //no two connected vertex have same colours
+    return 1;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+					
+						//NEXT
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////detect cycle in un directed adjlist
+
+
+//   call dfs(start,-1); //
+bool cycle =false;
+void dfs(pi s){
+    if(visited[s.first])return;
+    visited[s.first]=true;
+
+		// prosses
+    for(auto u :adjlist[s.first]){
+        if(visited[u] && u!=s.second){
+            cycle=true;
+        }
+        dfs({u,s.first});   
+    }
+
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+					
+					//NEXT
+
+
+
+////////////////////////////////////////////////////////////////////////////////////detect cycle in direct graph 
+vii adjlist;
+map<ll,ll> start;
+map<ll,ll> finish;
+map<ll,bool> visited;
+ll timer=0;
+bool cycle=false;
+
+void dfs_edge_class(int s){
+
+	// process in node //ss
+
+    visited[s]=true;
+        start[s]=timer++;
+    for(auto u :adjlist[s]){
+           if (start[u] == 0)
+           {
+               dfs_edge_class(u);
+           }
+            else
+            {
+                if(finish[u] == 0)/////   cycle mostafa saad
+                    cycle = true;
+
+            }
+    }
+        finish[s]=timer++;
+
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+						//NEXT
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////maximum depth  undirected without bfs
+
+void dfs (ll node) {
+    visited[node] = true;
+    num++;
+	 if (num > mx)
+                mx = num;
+    for (auto child : arr[node]){
+        if (!visited[child]) {							//not 100 % correct
+
+            dfs(child);
+        }
+    }
+    num--;   // if  not direct delete;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+				//NEXT
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////// dep2[] every  node has long  path = ;
+
+void dfs_mark_depth(ll s ,ll high)
+{
+        if(vis[s]) return;
+        vis[s]=true;
+          dep[s]=high;
+
+        for(auto u: adjlist[s])
+        {
+                dfs_mark_depth(u,high+1);
+
+        }
+        if(adjlist[s].size()!=0)
+        {
+            for(auto u: adjlist[s])
+            {
+                   dep2[s]=max(dep2[u]+1,dep2[s]);
+
+            }
+        }
+        else
+        {
+         dep2[s]=0;
+        }
+
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+

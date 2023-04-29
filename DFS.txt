@@ -1,0 +1,290 @@
+vector<int> topsort;
+vector<int> start, finish;
+bool anyCycle = 0;
+int timer = 0;
+
+const int N = 1e4+10;
+vector<vector < int > >adj(N);
+vector<bool>vis(N,0);
+void dfs( int node)
+{
+    vis[node] = true;
+    for ( auto child : adj[node])
+        if(vis[child] == false)
+            dfs(child);
+}
+/////////
+code to hash treeeee :-)
+
+map<vector<int>, int> mp;
+int idx = 0;
+
+int dfs(int s, int p, vector<int> adj[]) {
+    vector<int> v;
+    for (auto i: adj[s]) {
+        if (i != p) 
+            v.push_back(dfs(i, s, adj));
+    }
+    sort(v.begin(), v.end());
+    if (!mp.count(v)) mp[v] = idx++;
+    return mp[v];
+}
+////////////////////////////
+some hashing problem alsoooo  https://codeforces.com/contest/1800/submission/195841803
+vll lvl(N),sz(N);
+vector<vll>adj(N);
+vll childs(N);
+vll hashOne(N),hashTwo(N);
+ 
+ll add(ll a, ll b,ll mod) {
+    return ((a % mod + b % mod) + mod) % mod;
+}
+ 
+ll mul(ll a, ll b,ll mod) {
+    return ((a % mod * b % mod) + mod) % mod;
+}
+ 
+ll minu(ll a, ll b,ll mod) {
+    return ((a % mod - b % mod) + mod) % mod;
+}
+ 
+ll fastp(ll a, ll b,ll mod) {
+    if (b == 0)return ll(1);
+    ll temp = fastp(a, b / 2,mod);
+    ll total = mul(temp, temp,mod);
+    if (b % 2 == 1) {
+        total = mul(total, a,mod);
+    }
+    return total;
+}
+vll pw(N),pw2(N);
+void pre() {
+    pw[0] = 1;
+    pw2[0]=1;
+    for (int i = 1; i < N; ++i) {
+        pw[i] = mul(pw[i - 1], 2750159,mod);
+        pw2[i] = mul(pw2[i - 1], 2750161,mod2);
+    }
+}
+ 
+void getSz(int node,int par){
+    sz[node]=1;
+    lvl[node]=lvl[par]+1;
+    fvec(item,adj[node]){
+        if(item==par)continue;
+        getSz(item,node);
+        sz[node]+=sz[item];
+        childs[node]++;
+    }
+}
+bool res=1;
+bool dfs(int node,int par,bool go){
+    if(res==0)return 0;
+    vector<pair<ll,pll>>compare;
+    if(go==0||node==1) {
+        ll siz = 0;
+        hashOne[node] = 1;
+        hashTwo[node] = 1;
+        vp addd;
+        fvec(item, adj[node]) {
+            if (item == par)continue;
+            dfs(item, node, 0);
+            addd.push_back({sz[item],item});
+        }
+        sort(all(addd));
+        fvec(item,addd){
+            hashOne[node] = add(hashOne[node], mul(hashOne[item.S], pw[siz], mod), mod);
+            hashTwo[node] = add(hashTwo[node], mul(hashTwo[item.S], pw[siz], mod2), mod2);
+            siz += sz[item.S];
+        }
+    }
+    bool odd=childs[node]%2;
+    if(go==0)
+        return 1;
+    fvec(item,adj[node]){
+        if(item==par)continue;
+        compare.push_back({hashOne[item],{hashTwo[item],item}});
+    }
+    sort(all(compare));
+    compare.push_back({-1,{-1,0}});
+    fo(i,compare.size()-1){
+        if(compare[i].F==compare[i+1].F&&compare[i].S.F==compare[i+1].S.F){
+            i++;
+        }else if(odd){
+            odd=0;
+            dfs(compare[i].S.S,node, true);
+        }else
+            res=0;
+    }
+    return 1;
+}
+void func(int ind) {
+    ll n;cin>>n;
+    fp(i,1,n){
+        hashOne[i]=0;hashTwo[i]=0;
+        adj[i].clear();
+        sz[i]=0;
+        lvl[i]=0;
+        childs[i]=0;
+    }
+    vector<pll>vec;
+    fp(i,1,n-1){
+        ll u,v;cin>>u>>v;
+        vec.push_back({u,v});
+        adj[u].push_back(v);
+        adj[v].push_back(u);
+    }
+    res=1;
+    getSz(1,0);
+    dfs(1,0,1);
+    
+    if(res){
+        cout<<"YES\n";
+    }else
+        cout<<"NO\n";
+}
+
+//////////
+
+-->   return the cycle path in graph
+
+vector<vector < int > >adj(N);
+vector<bool> vis(N,0);
+ll stNode=-1,enNode=-1;
+vll parent(N);
+bool cycle=0;
+void dfs( int node,int par)
+{
+    vis[node]=1;
+    parent[node]=par;
+    fvec(item,adj[node]){
+        if(item==par||cycle)continue;
+        if(vis[item]&&cycle==0){
+            stNode=node,enNode=item;
+            cycle=1;
+            return;
+        }else{
+            dfs(item,node);
+        }
+    }
+}
+void func(int inde) {
+    ll n,m;cin>>n>>m;
+    fo(i,m){
+        ll u,v;cin>>u>>v;
+        adj[u].push_back(v);
+        adj[v].push_back(u);
+    }
+    fp(i,1,n){
+        if(vis[i]==0){
+            dfs(i,0);
+            if(stNode==-1)continue;
+            vll res;
+            ll node=stNode;
+            res.push_back(node);
+            while (node!=enNode){
+                node=parent[node];
+                res.push_back(node);
+            }
+            res.push_back(stNode);
+            cout<<res.size()<<'\n';
+            fvec(item,res)cout<<item<<" ";
+            return;
+        }
+    }cout<<"IMPOSSIBLE";
+}
+// to get tobologicla sort put the node in stack in tha
+// get the minimum #of swaps to make array sorted
+vector<vector < int > >adj(N);
+vector<bool>vis(N,0);
+map<ll,ll>component;
+int index=1;
+void dfs( int node)
+{
+    component[node]=index;
+    vis[node] = true;
+    for ( auto child : adj[node])
+        if(vis[child] == false)
+            dfs(child);
+}
+void func(int ind) {
+   ll num;cin>>num;
+   vis.assign(num+1,0);
+   adj.assign(num+1,{});
+   vll vec(num+1);
+   fp(i,1,num){
+       cin>>vec[i];
+       adj[vec[i]].push_back(i);
+       adj[i].push_back(vec[i]);
+   }
+   component.clear();
+   index=0;
+   ll cycles=0;
+   fp(i,1,num){
+       if(!vis[i]){
+           cycles++;
+           dfs(i);
+            index++;
+       }
+   }
+   ll res=OO;
+   fp(i,1,num-1){
+       if(component[i+1]==component[i]){
+           res=min(res,num-(cycles+1));
+       }else{
+           res=min(res,num-(cycles-1));
+       }
+   }
+   cout<<res<<'\n';
+}
+
+//if u work with directed graph ---->> make vector of pair to save indegree of each node and sort it the start the dfs from lower degree to greater one.  
+
+
+// https://codeforces.com/contest/131/problem/D problem on get cycles nodes
+
+bool conected (int node,int n){
+	dfs(1);
+	fo(i,n){
+		if(vis[i]==false)return false;
+	}
+	return true;
+}
+// detect cycle in undirected graph   
+map<ll, vector < int > >adj;       
+map<ll,bool> vis2;
+bool cycle = false;
+void cyclic( int node , int par)
+{
+    vis2[node] = true;
+    for (auto child : adj[node])
+       {
+        if(vis2[child] == false)
+            cyclic(child,node);
+        else if (child != par)
+            cycle = true;
+    }
+}
+// detect cycle in directed graph   
+vector<vector < int > >adj(N);
+vector<bool> vis(N,0);
+ll stNode=-1,enNode=-1;
+vll parent(N);
+bool cycle=0;
+vector<bool>instack(N);
+void dfs( int node,int par)
+{
+
+    instack[node]=1;
+    vis[node] = true;
+    parent[node]=par;
+    for ( auto child : adj[node])
+        if(vis[child] == false)
+            dfs(child,node);
+        else if(instack[child]){
+            cycle =true;
+            stNode=node,enNode=child;
+        }
+    instack[node]=0;
+}
+

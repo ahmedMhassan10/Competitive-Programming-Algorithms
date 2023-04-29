@@ -26,7 +26,8 @@ void get_cnt(int node, int parent, bool filling, int depth = 1) {  //(changable)
     mx_depth = max(mx_depth, depth);
     if (filling) cnt[depth]++;
     else ans += cnt[k - depth];
-    for (int i : g[node]) if (!processed[i] && i != parent)
+    for (int i : g[node]) 
+	if (!processed[i] && i != parent)
             get_cnt(i, node, filling, depth + 1);
 }
 
@@ -34,12 +35,15 @@ void centroid_decomp(int node = 1) {
     int centroid = get_centroid(get_subtree_sizes(node) >> 1, node);//(unchageable)
     processed[centroid] = true;//(unchageable)
     mx_depth = 0;
-    for (int i : g[centroid]) if (!processed[i]) {//(changable)
+    for (int i : g[centroid])
+	 if (!processed[i]) {//(changable)
             get_cnt(i, centroid, false);
             get_cnt(i, centroid, true);
-        }
+    	}
     fill(cnt + 1, cnt + mx_depth + 1, 0);
-    for (int i : g[centroid]) if (!processed[i]) centroid_decomp(i);//(unchageable)
+    for (int i : g[centroid]) 
+	if (!processed[i]) 
+		centroid_decomp(i);//(unchageable)
 }
 
 

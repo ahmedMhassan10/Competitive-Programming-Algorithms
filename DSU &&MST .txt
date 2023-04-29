@@ -36,17 +36,17 @@ bool isconnected( int u , int v)
 
 // Kruskal`s algoritm to get the minimum spining trees from undirected weighted graph
 
-    vector<pair<int,pair<int,int>>> vec;
-    for ( int i = 0 ; i < n;  i++)
+    vector<pair<ll,pair<ll,ll>>> vec;
+    for ( ll i = 0 ; i < n;  i++)
     {
-       	int u,v,k;cin>>u>>v>>k;
+       	ll u,v,k;cin>>u>>v>>k;
         vec.pb({k,{u,v}});
     }
     sort(vec.begin(),vec.end());
-    int ans=0;
+    ll ans=0;
     for(int i=0;i<n;i++)
 	{
-		int u=vec[i].second.first,v=vec[i].second.second;
+		ll u=vec[i].second.first,v=vec[i].second.second;
 		if(isconnected(u,v))
 			continue;
 		ans+=vec[i].first;

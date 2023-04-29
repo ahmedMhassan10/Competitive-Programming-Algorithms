@@ -3,27 +3,42 @@ const ll N = 2e5+10 , M = 645, oo = 1e18+7 , mod = 998244353, sqr = 450;
 ll dist[N] , n,m;
 vector < pair < int , pair < ll, ll> > > edges;
 bool negCycle = false;
-void Bellman_Ford( ll  src)
+ll parent[N];
+ll st=-1;
+void Bellman_Ford( ll  src,ll par)
 {
-    for ( int i = 1 ; i <= n ; i++)
-        dist[i] = OO;
     dist[src] = 0;
+    parent[src]=par;
     // O(n * m)
     for(int i= 1 ; i<= n ; i++) {
         for(int j = 0; j < edges.size(); j++) {
             int u = edges[j].S.F, v = edges[j].S.S, w = edges[j].F;
             if (dist[u] + w < dist[v])
             {
-                if(i == n)
-                    negCycle = true;                     
+                if(i == n) {
+                    negCycle = true;
+                    st=v;
+                }
                 dist[v] = dist[u] + w;
+                parent[v]=u;
             }
         }
     }
 }
+/*  -->to return negative cycle in graph
+	fp(i,1,n)st=parent[st];
+        vll res;
+        for (int v = st;; v = parent[v]) {
+            res.push_back(v);
+            if (v == st && res.size() > 1)break;
+        }
+        reverse(all(res));
+        fvec(item, res)cout << item << " ";
+
+*/
 /*
 
-if(dist[u]!=OO)    // -->> to return the negative cycle
+if(dist[u]!=OO)    // -->> to return the negative cycles nodes
             if (dist[u] + w < dist[v])
             {
                 if(i == n)
@@ -42,12 +57,12 @@ void testcase(){
     }
     Bellman_Ford(1);
 }
+
+
 ///floyd / warshal->>>> get the shortest path between all nodes in graph &&check negative cycle
 int N=400;
 ll dist[N][N],n;
 void floyed_warshal(){
-
-
 	for (int k = 1; k <= n; ++k) {
   	  for (int i = 1; i <= n; ++i) {
        		 for (int j = 1; j <= n; ++j) {

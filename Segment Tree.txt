@@ -1,5 +1,8 @@
 ///////////////////////
 
+https://codeforces.com/contest/1788/problem/E --> get the maximum length of segments that prifix greater than zero 
+
+///////////////////////
 to get nested segment and outer segments
 
 typedef tree< pll, null_type, less<pll>, rb_tree_tag, tree_order_statistics_node_update> ordered_set;
@@ -75,7 +78,20 @@ ll query(ll node,ll l ,ll r,ll st,ll en) {// DONT FORGET BUILD IN MAIN YA 7OMAR
        ll md= (l+r)/2 ;
        return (query(node*2,l,md,st,en)+query(node*2+1,md+1,r,st,en));// DONT FORGET BUILD IN MAIN YA 7OMAR
 }
-
+// get kth one
+ll solve(ll node,ll l,ll r,ll k){// seg on sum
+    if(r==l){
+        return l-1;
+     }
+    ll md=(l+r)/2;
+    ll re=seg[2*node];
+    //cout<<l<<" "<<md<<" "<<r<<" "<<re<<" "<<k<<'\n';
+    if(k<=re){
+        return solve(node*2,l,md,k);
+    }else {
+        return solve(2*node+1,md+1,r,k-re);
+    }
+}
 // get the index of some value
 ll solve(ll node,ll l,ll r,ll val){
     ll md=(l+r)/2;
@@ -89,43 +105,7 @@ ll solve(ll node,ll l,ll r,ll val){
 
 /// First element at least X
 
-
-ll seg[N<<2];
-ll arr[N];
-ll num;
-void Build_seg(ll node,ll l , ll r) {
-    if (l == r) {
-        seg[node] = arr[l];
-        return;
-    }
-    ll mid = (l + r) / 2;
-    Build_seg(node * 2, l, mid);
-    Build_seg(node * 2 + 1, mid + 1, r);
-    seg[node] = max(seg[node * 2] , seg[node * 2 + 1]);
-}
-void update(ll node,ll l ,ll r,ll idx,ll val) {
-    if (l == r) {
-        seg[node] = val;
-        return;
-    }
-    ll mid = (l + r) / 2;
-    if (idx <= mid) update(node * 2, l, mid, idx,val);
-    else update(node * 2 + 1, mid + 1, r, idx,val);
-    seg[node] = max(seg[node * 2], seg[node * 2 + 1]);
-}
-ll query(ll node,ll l ,ll r,ll st,ll en) {
-       if(l>en || r<st){
-        return 0;
-       }
- 
-       if(l>=st && r<=en){
-             return seg[node];
-       }
- 
-       ll md= (l+r)/2 ;
-       return max(query(node*2,l,md,st,en),query(node*2+1,md+1,r,st,en));
-}
-ll solve(ll node,ll l,ll r,ll x){
+ll solve(ll node,ll l,ll r,ll x){// seg on max
     if(r==l)return l;
     ll re=seg[2*node];
     ll md=(r+l)/2;
@@ -183,23 +163,7 @@ ll query(ll node,ll l ,ll r,ll st,ll en) {
        ll md= (l+r)/2 ;
        return (query(node*2,l,md,st,en)+query(node*2+1,md+1,r,st,en));
 }
----->to  return the index of kth one (sum seg)
-ll solve(ll node,ll l,ll r,ll k){
-    if(r==l){
-        return l-1;
-     }
-    ll md=(l+r)/2;
-    ll re=seg[2*node];
-    //cout<<l<<" "<<md<<" "<<r<<" "<<re<<" "<<k<<'\n';
-    if(k<=re){
-        return solve(node*2,l,md,k);
-    }else {
-        return solve(2*node+1,md+1,r,k-re);
-    }
-}
-
 -->> get number of different elements on a segment and maximun element is 40
-
 
 ll seg[N<<2][41];
 ll arr[N];

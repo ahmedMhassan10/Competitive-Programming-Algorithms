@@ -1,0 +1,509 @@
+#include <bits/stdc++.h>
+#include <ext/pb_ds/assoc_container.hpp>
+#include <ext/pb_ds/tree_policy.hpp>
+using namespace std;
+using namespace __gnu_pbds;
+typedef tree< int, null_type, less<int>, rb_tree_tag, tree_order_statistics_node_update> ordered_set;
+
+#define int long long
+#define ll long long
+
+#define setp(item) cout<<fixed<<setprecision(item);
+#define PI 3.14159265358979323846264338327950
+int ceilSqrt(int a){
+    return ::ceil(sqrtl(a));
+}
+int  divC(int a,int b){
+    return a/b+(a%b!=0);
+}
+int gcd(int a, int b) { return ((b == 0) ? a : gcd(b, a % b)); }
+int lcm(int a,int b){return (a*b)/gcd(a,b);}
+const int OO =1e15, mod = 1e9+7,mod2=1e9+9, N =1e5+5,M=30,MOD= 998244353, minOO=LLONG_MIN;
+///   هذا الحل من وحي خيال المؤلف واي تشابه بينه و بين اي حل اخر ما هو الا محض الصدفة
+/// :-)
+/// a33333333333333333333333333333333333333333333333333333333333333333333333333333333333333
+ll add ( ll a , ll b, ll mod)
+{
+    return (a + b) % mod;
+}
+ll sub ( ll a , ll b, ll mod)
+{
+    return (a - b +mod) % mod;
+}
+ll mul ( ll a , ll b, ll mod)
+{
+    return (1LL * a%mod * b%mod) % mod;
+}
+ll fop( ll b , ll p, ll mod)
+{
+    if(!p)
+        return 1;
+    ll temp = fop(b,p/2,mod)%mod;
+    temp = mul(temp,temp,mod);
+    if(p&1)
+        temp = mul(temp,b,mod);
+    return temp%mod;
+}
+ll  modInverse(ll  n, ll mod){return fop(n, mod - 2, mod);}
+int phi[N];
+vector<int>Div[N];
+void pre()//---> taken from Abdel-AzizMostafa
+{
+    phi[0] = 0;
+    phi[1] = 1;
+    for (int i = 2; i < N; i++)
+        phi[i] = i - 1;
+
+    for (int i = 2; i < N; i++)
+        for (int j = 2 * i; j < N; j += i)
+            phi[j] -= phi[i];
+    for ( int i = 1 ; i < N ; i++)
+        for ( int j = i ; j < N; j+=i)
+            Div[j].push_back(i);
+}
+
+void func(int index){
+    ll n;cin>>n;
+    pre();
+    ll res=0;
+    for (int c = 1; c <=n-2 ; ++c) {
+        ll v=n-c;
+        for(auto item:Div[v]){
+            if(item==v)continue;
+            ll v1=c/ gcd(c,item);// if gcd(x,y)==1 then gcd(x-y,y)==1
+            res= add(res, mul(lcm(c,item),phi[v/item],mod),mod);
+        }
+    }
+    cout<<res<<'\n';
+}
+signed main() {
+    //freopen("input.txt","rt",stdin);
+    //freopen("output.txt","wt",stdout);
+    ios_base::sync_with_stdio(false);
+    cin.tie(nullptr);
+    cout.tie(nullptr);
+    int t=1;
+//    cin>>t;
+    int index=1;
+    while (t--){
+        func(index++);
+    }
+    return 0;
+}
+
+//////////////////////////////////////////////////////////
+From basic properties of GCD we know that GCD(x,y)=GCD(x−y,y)
+
+. The same applies for multiple arguments: GCD(x,y,z,…)=GCD(x−y,y,z,…)
+
+. Let's use this for GCD(a1+bj,…,an+bj) and subtract a1+bj from all other arguments: GCD(a1+bj,…,an+bj)=GCD(a1+bj,a2−a1,…,an−a1)
+.If we find G=GCD(a2−a1,…,an−a1)
+, then any answer can be found as GCD(a1+bj,G)
+. Note that we have to assume that GCD of an empty set is 0
+, and GCD(x,0)=x
+ for any x
+, since 0
+ is the only number divisible by any other number.
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+we can check primarty by check if N is divisable by any prime less or equal than sqrt(N) (save the primes first then check)
+ 
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+to list primes less than N in o(Nlog(log(N))):
+
+    vector<ll> primes(N+1000,1);
+    primes[0]=0;
+    primes[1]=0;
+    for( ll i=2;i*i<=N;i++)
+    {
+        if(primes[i]==1){
+            for(ll j=i*i;j<=N;j+=i){
+                primes[j]= 0;
+            }
+        }
+    }
+
+for each i if primes[i]=1 --->then i is prime
+
+check primes using seive
+bool isPrime(ll N) { // a good enough deterministic prime tester
+	if (N <= _sieve_size) return bs[N]; // O(1) for small primes
+	for (int i = 0; i < (int)primes.size(); i++)
+		if (N % primes[i] == 0) return false;  --------O(sqrt(N)/ln(N))
+return true; // it takes longer time if N is a large prime!
+}
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+long long in c++ will accept untill factorial(20) after that this will overflow
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+we can get factorization using primes from seive in O(sqrt(N)/ln(N)) which is better than the famous one which works in O(sqrt(N))
+
+
+
+vector<long long> primeFactors(ll N) { // remember: vi is vector<int>, ll is long long
+	vector<long long> factors;
+	ll PF_idx = 0, PF = primes[PF_idx]; // primes has been populated by sieve
+	while (PF * PF <= N) { // stop at sqrt(N); N can get smaller
+		while (N % PF == 0) {
+			N /= PF; 
+			factors.push_back(PF);
+		} // remove PF
+		PF = primes[++PF_idx]; // only consider primes!
+	}
+	if (N != 1) factors.push_back(N); // special case if N is a prime
+	return factors; // if N does not fit in 32-bit integer and is a prime
+}
+
+
+
+numPF(N): Count the number of prime factors of N
+
+A simple tweak of the trial division algorithm to find prime factors shown earlier.
+
+ll numPF(ll N) {
+    ll PF_idx = 0, PF = primes[PF_idx], ans = 0;
+    while (PF * PF <= N) {
+        while (N % PF == 0) { N /= PF; ans++; }
+        PF = primes[++PF_idx];
+    }
+    if (N != 1) ans++;
+    return ans;
+}
+
+Get the count of divisors of N
+
+
+Divisor of integer N is defined as an integer that divides N without leaving a remainder.
+
+If a number N = ai ×bj ×. . .×ck, then N has (i+1)×(j +1)×. . .×(k +1) divisors.
+
+For example: N = 60 = 2*2 × 3*1 × 5*1 has (2 + 1) × (1 + 1) × (1 + 1) = 3 × 2 × 2 = 12 divisors.
+
+The 12 divisors are: {1, 2, 3, 4, 5, 6, 10, 12, 15, 20, 30, 60}.
+
+The prime factors of 12 are highlighted. See that N has more divisors than prime factors.
+
+ll numDiv(ll N) {
+    ll PF_idx = 0, PF = primes[PF_idx], ans = 1; // start from ans = 1
+    while (PF * PF <= N) {
+        ll power = 0; // count the power
+        while (N % PF == 0) { N /= PF; power++; }
+        ans *= (power + 1); // according to the formula
+        PF = primes[++PF_idx];
+    }
+    if (N != 1) ans *= 2; // (last factor has pow = 1, we add 1 to it)
+    return ans;
+}
+
+
+Get the sum of Divisors of N
+
+ll sumDiv(ll N) {
+	ll PF_idx = 0, PF = primes[PF_idx], ans = 1; // start from ans = 1
+	while (PF * PF <= N) {
+		ll power = 0;
+		while (N % PF == 0) { N /= PF; power++; }
+		ans *= ((ll)pow((double)PF, power + 1.0) - 1) / (PF - 1);
+		PF = primes[++PF_idx];
+	}
+	if (N != 1) ans *= ((ll)pow((double)N, 2.0) - 1) / (N - 1); // last
+	return ans;
+}
+// the product of divisors == (num^((#divisors/2)%(p-1)))%p
+
+Get the number of Number which are relatively prime to N ---> GCD(N,x)==1
+
+
+ll EulerPhi(ll N) {
+	ll PF_idx = 0, PF = primes[PF_idx], ans = N; // start from ans = N
+	while (PF * PF <= N) {
+		if (N % PF == 0) ans -= ans / PF; // only count unique factor
+		while (N % PF == 0) N /= PF;
+		PF = primes[++PF_idx];
+	}
+	if (N != 1) ans -= ans / N; // last factor
+	return ans;
+}
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Modified Sieve----> calculate the number of different prime factors for all numbers less than N
+
+Instead of finding the prime factors and then calculate the required values, we start from the prime numbers
+and modify the values of their multiples. The short modified sieve code is shown below:
+
+
+memset(numDiffPF, 0, sizeof numDiffPF);
+for (int i = 2; i < N; i++)
+	if (numDiffPF[i] == 0) // i is a prime number
+	for (int j = i; j < N; j += i)
+		numDiffPF[j]++; // increase the values of multiples of i
+
+
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+///get the least prime factor for each number
+
+vector<ll> primes(N+5,1);
+vll prime;
+void seive(){
+    fp(i,2,N){
+        primes[i]=i;
+    }
+    primes[0]=0;
+    primes[1]=0;
+    for( ll i=2;i*i<=N;i++)
+    {
+        if(primes[i]==i){
+            for(ll j=2*i;j<=N;j+=i){
+                primes[j]= min(primes[j],i);
+            }
+        }
+    }
+ 
+}
+
+void func(int ind) {
+    ll l,r;cin>>l>>r;
+    if(gcd(l,r)!=1){
+       cout<<"0\n";
+       return;
+    }
+    if(r-l==1){
+       cout<<"-1\n";
+       return;
+    }
+    ll diff=r-l;
+    vector<ll>se;
+    ll n=diff;
+    while (n>1){
+        if(se.size()==0||se.back()!=primes[n]){
+            se.push_back(primes[n]);
+        }
+        n/=primes[n];
+    }
+    ll res=OO;
+    fvec(item,se){
+        res=min(res,item-(l)%item);
+    }
+    cout<<res<<'\n';
+ 
+}
+//////////////////////////////////////////////
+
+
+inclusion exclusion ----> get the number of coprime pairs in array
+
+
+
+vector<ll> primes(N+5,1);
+void seive(){
+    fp(i,2,N){
+        primes[i]=i;
+    }
+    primes[0]=0;
+    primes[1]=0;
+    for( ll i=2;i*i<=N;i++)
+    {
+        if(primes[i]==i){
+            for(ll j=2*i;j<=N;j+=i){
+                primes[j]= min(primes[j],i);
+            }
+        }
+    }
+}
+void func(int ind) {
+    seive();
+    ll n;cin>>n;
+    vll vec(n);
+    fo(i,n)cin>>vec[i];
+    sort(all(vec));
+    ll res=0;
+    vll count(N,0);
+    fo(i,n){
+        ll nn=vec[i];
+        vector<ll>se;
+        while (nn>1){
+            if(se.size()==0||se.back()!=primes[nn]){
+                se.push_back(primes[nn]);
+            }
+            nn/=primes[nn];
+        }
+        ll sz=se.size();
+        fo(kk,(1<<sz)){
+            if(kk==0)continue;
+            ll value=1;
+            fo(j,sz){
+                if((1<<j)&kk)value*=se[j];
+            }
+            if(__builtin_popcount(kk)%2==0){
+                res-=count[value];
+            }else{
+                res+=count[value];
+            }
+            count[value]++;
+        }
+    }
+    cout<<(n)*(n-1)/2-res;
+
+}
+
+
+/////////////////////////////////////////
+calculate Mobius
+
+
+ll lpf[1000001],mobius[1000001];
+ 
+void least_prime_factor()
+{
+    for(int i=2;i<1000001;i++)
+    {
+        if(!lpf[i])
+        {
+            for(int j=i;j<1000001;j+=i)
+            {
+                if(!lpf[j]) lpf[j]=i;
+            }
+        }
+    }
+}
+ 
+void Mobius()
+{
+    for(int i=1;i<1000001;i++)
+    {
+        if(i==1) mobius[i]=1;
+        else
+        {
+            if(lpf[i/lpf[i]]==lpf[i]) mobius[i]=0;
+            else mobius[i]=-1*mobius[i/lpf[i]];
+        }
+    }
+}
+
+
+////////////////////////////////////////
+hashing prime factorization
+vector<ll> primes(N+5,1);
+void seive(){
+    fp(i,2,N){
+        primes[i]=i;
+    }
+    primes[0]=0;
+    primes[1]=0;
+    for( ll i=2;i*i<=N;i++)
+    {
+        if(primes[i]==i){
+            for(ll j=2*i;j<=N;j+=i){
+                primes[j]= min(primes[j],i);
+            }
+        }
+    }
+}
+ 
+ll add(ll a, ll b,ll mod) {
+    return ((a % mod + b % mod) + mod) % mod;
+}
+ 
+ll mul(ll a, ll b,ll mod) {
+    return ((a % mod * b % mod) + mod) % mod;
+}
+ 
+ll minu(ll a, ll b,ll mod) {
+    return ((a % mod - b % mod) + mod) % mod;
+}
+ 
+ll fastp(ll a, ll b,ll mod) {
+    if (b == 0)return ll(1);
+    ll temp = fastp(a, b / 2,mod);
+    ll total = mul(temp, temp,mod);
+    if (b % 2 == 1) {
+        total = mul(total, a,mod);
+    }
+    return total;
+}
+vi  pw(N);
+vi  pw2(N);
+void pre() {
+    pw[0] = 1;
+    pw2[0] = 1;
+    for (int i = 1; i < N; ++i) {
+        pw[i] = mul(pw[i - 1], 29,mod);
+        pw2[i] = mul(pw2[i - 1], 31,mod2);
+    }
+}
+ 
+void func(int ind) {
+    ll n,k;cin>>n>>k;
+    vll vec(n);
+    fo(i,n)cin>>vec[i];
+    sort(all(vec));
+    map<pll,ll>ma;
+    vll hash1(n),hash2(n);
+    vll revHash1(n),revHash2(n);
+    fo(i,n){
+        map<ll,ll>mm;
+        ll temp=vec[i];
+        while (temp>1){
+            mm[primes[temp]]++;
+            temp/=primes[temp];
+        }
+        ll hashh1=0,hashh2=0;
+        ll revHashh1=0,revHashh2=0;
+        fvec(item,mm){
+            hashh1= add(hashh1,mul(pw[item.F],item.S%k,mod),mod);
+            hashh2= add(hashh2,mul(pw2[item.F],item.S%k,mod),mod);
+            revHashh1= add(revHashh1,mul(pw[item.F],(k-item.S%k)%k,mod),mod);
+            revHashh2=add(revHashh2,mul(pw2[item.F],(k-item.S%k)%k,mod),mod);
+        }
+        hash1[i]=hashh1;
+        hash2[i]=hashh2;
+        revHash1[i]=revHashh1;
+        revHash2[i]=revHashh2;
+        ma[{hashh1,hashh2}]++;
+    }
+    ll ans=0;
+    fo(i,n){
+        ma[{hash1[i],hash2[i]}]--;
+        ans+=ma[{revHash1[i],revHash2[i]}];
+    }cout<<ans<<'\n';
+}
+/////////////////////////////////////
+void func(int ind) {
+    ll n;cin>>n;
+    vll vec(n);
+    fo(i,n)cin>>vec[i];
+    sort(all(vec));
+    fo(i,n-1){
+        if(vec[i]==vec[i+1]){
+            cout<<"NO\n";
+            return;
+        }
+    }
+    fp(i,2,n/2){
+        vll values(i);
+        fo(j,n){
+            values[vec[j]%i]++;
+        }
+        ll mini=*min_element(all(values));
+        if(mini>=2){
+            cout<<"NO\n";
+            return;
+        }
+    }
+    cout<<"YES\n";
+}

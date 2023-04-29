@@ -18,7 +18,8 @@ void dfs( int node , int par)
         dfs(ch,node);
     }
 }
- 
+
+
 int findKthAncestor( int u , int k)		//return zero if k > depth --> call dfs(1,0) in main
 {
     for ( int j = M-1 ; j >= 0 ; j--)
@@ -26,7 +27,8 @@ int findKthAncestor( int u , int k)		//return zero if k > depth --> call dfs(1,0
             u = ancestor[u][j];
     return u;
 }
- 
+
+
 int getLCA( int u , int v)
 {
     if(lvl[u] < lvl[v])
@@ -43,8 +45,15 @@ int getLCA( int u , int v)
     }
     return ancestor[u][0];
 }
-
+bool comp(ll a,ll b){
+    return lvl[a]>lvl[b];
+}
+ll getDist(ll u,ll v){
+    ll lca= getLCA(u,v);
+    return lvl[u]+lvl[v]-2*lvl[lca];
+}
 // LCA &Sparse table to get max 
+
 int n , ancestor[N][M], lvl[N],sp[N][M];
 vector < pair<int,int> > g[N];
 
@@ -89,6 +98,11 @@ int getLCA( int u , int v)
     }
     return ancestor[u][0];
 }
+
+bool comp(ll a,ll b){
+    return lvl[a]>lvl[b];
+}
+
 int maxi(int u,int k,int v,int c)
 {
     int ma=0;

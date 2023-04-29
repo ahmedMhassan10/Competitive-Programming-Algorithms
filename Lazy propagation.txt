@@ -54,66 +54,83 @@ ll query( int node , int l , int r , int s , int e)
 
 ////////////////////////////////////////////////////////////////
 
-///custom propagate///
-
-ll trees[N<<2], a[N], lazy[N<<2];
-ll num,q;
-vll vec(N);
+///custom propagate/// Polynomial 
+ll seg[N<<2], a[N], lazy[N<<2],counter[N<<2];
 void build( int node , int l , int r)
 {
     lazy[node]=0;
+    counter[node]=0;
     if( l == r)
     {
-        trees[node]=a[l];
+        seg[node]=a[l];
         return ;
     }
     int md = l + r >> 1 ;
     build(node<<1,l,md),build(node<<1|1,md+1,r);
-    trees[node] = trees[node<<1] + trees[node<<1|1];
+    seg[node] = seg[node<<1] + seg[node<<1|1];
 }
 
 void propagate( int node , int l , int r )
 {
     if(lazy[node] == 0)
         return;
-    if(l==r){
-        //cout<<"lazy\n";
-        a[l]=vec[lazy[node]];
-    }
+    ll n=r-l+1;
+    ll start=lazy[node]-(r-l)*counter[node];
+    ll c=counter[node]*(n-1)+2*start;
+    ll nn=n*(2*start+(n-1)*counter[node])/2;
+    seg[node] +=n*(2*start+(n-1)*counter[node])/2;
     if(l != r) {
-        ll md=(l+r)/2;
-        lazy[node << 1] = lazy[node];
-        lazy[node << 1 | 1] = lazy[node]+md-l+1;
+        int md = l + r >> 1 ;
+        lazy[node << 1] += lazy[node]-(r-md)*counter[node];
+        lazy[node << 1 | 1] += lazy[node];
+        counter[node<<1]+=counter[node];
+        counter[node<<1|1]+=counter[node];
     }
+    counter[node]=0;
     lazy[node] = 0;
 }
 
 void update( int node , int l , int r , int s , int e , int val)
 {
     propagate(node,l,r);
+
     if ( l > e || r < s)
         return ;
     if ( l >= s and r <= e)
     {
-        lazy[node] = val+l-s;
+        lazy[node] += val-(e-r);
+        counter[node]++;
         propagate( node , l, r);
         return;
     }
     int md = l + r >> 1 ;
     update(node<<1,l,md,s,e,val),update(node<<1|1,md+1,r,s,e,val);
-    trees[node] = trees[node<<1] + trees[node<<1|1];
+    seg[node] = seg[node<<1] + seg[node<<1|1];
 }
-
 ll query( int node , int l , int r , int s , int e)
 {
     propagate(node,l,r);
     if ( l > e || r < s)
         return 0;
     if ( l >= s and r <= e)
-    {
-        propagate(node,l,r);
-        return trees[node];
-    }
+        return seg[node];
     int md = l + r >> 1 ;
     return query(node<<1,l,md,s,e)+query(node<<1|1,md+1,r,s,e);
+}
+
+void func(int ind) {
+    ll n,q;cin>>n>>q;
+    fp(i,1,n)cin>>a[i];
+    build(1,1,n);
+    while (q--){
+        ll t;cin>>t;
+        if(t==1){
+            ll u,v;cin>>u>>v;
+            update(1,1,n,u,v,v-u+1);
+        }else{
+            ll u,v;cin>>u>>v;
+            cout<<query(1,1,n,u,v)<<'\n';
+        }
+    }
+//    fp(i,1,n)cout<<query(1,1,n,i,i)<<'\n';
 }
