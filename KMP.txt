@@ -3,9 +3,8 @@ PROPER PREFIX -->any prefix except string its self
 SUFFIX OF STRING -->any string ends with last char
 PROPER SUFFIX OF STRING -->any suffix except string its self
 
-
-void compute_prefix(string &s,vll &fail){
-    fp(i,1,siz(s)-1){
+void compute_prefix(string &s,vector<int> &fail){
+    for( int i=1;i<s.size();i++){
         int j=fail[i-1];
         while(j>0&& s[i]!=s[j])
             j=fail[j-1];
@@ -16,12 +15,12 @@ void compute_prefix(string &s,vll &fail){
 }
 void kmp(string &s,string &pat){
     ll k=0;
-    ll n=siz(s),m=siz(pat);
-    vll fail(m);
+    ll n=(s.size()),m=(pat.size());
+    vector<int> fail(m);
 
     compute_prefix(pat,fail);
 
-    fo(i,n){
+    for(int i=0;i<n;i++){
         while(k>0 &&pat[k]!=s[i]){
             k=fail[k-1];
         }
@@ -37,7 +36,7 @@ void kmp(string &s,string &pat){
 ///////////////////////////////
 two way---->   pat@string    for every pat.size in fail 1 occur
  ---->
-    kmp(pat,fail);
+    compute_prefix(pat,fail);
     ll j=0;
     for (int i = 0; i < x.size(); ++i) {
         while (j > 0 && x[i] != pat[j])
@@ -51,35 +50,101 @@ two way---->   pat@string    for every pat.size in fail 1 occur
     }
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+-->example of dp on kmp
+
+string st1 , st2, virus;
+int dp[N][N][N];
+int solve ( int i , int j , int mtch)
+{
+    if ( i == st1.size() || j == st2.size())
+        return 0;
+    int &ret = dp[i][j][mtch];
+    if(~ret)
+        return ret;
+    if(st1[i] == st2[j])
+    {
+        // skip
+        ret = solve(i+1,j+1,mtch);
+        while(mtch > 0 and st1[i] != virus[mtch])
+            mtch = fail[mtch-1];
+        if(st1[i] == virus[mtch])
+            mtch++;
+        // take
+        if(mtch != virus.size())
+            ret = max(ret,1 + solve(i+1,j+1,mtch));
+    }
+    else
+        ret = max(solve(i+1,j,mtch),solve(i,j+1,mtch));
+    return ret;
+}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 2- longest pre in same suf----> last elemnt in fali arr
 
-3- longest suf pailndrom -----> rev x @ x  last element in fail arr  // when use @ kmp use to know الي اي درجة تشبة البداية should make reverse in front //
+3- longest suf pailndrom -----> rev (x) @ x  last element in fail arr  // when use @ kmp use to know الي اي درجة تشبة البداية should make reverse in front //
 
-4- what is min char add from end to make pail ----> as above find long suf pail and add other char 
 
-5- what is min rept for string to make larger string -->fail arr wil be as 0000 12345678 -->abcdabcdabcd ---> len -last elemt =r && len%r==0
+4- what is min char add from end to make pailndrom ----> as above find long suf pail and add other char 
 
-7- for each pre count his freq in another strin --->
 
-8-find second and third longest pre suf---->
-    while(x>0) {
-        x = fail[x - 1];
-    }
-vip 6- to get freq of all prefix ---->
+5- what is min repetition for string to make larger string -->fail arr wil be as 0000 12345678 -->abcdabcdabcd 
+--> compute the fail then if(n%(n-fail[n-1])==0) -->solution is n-fail[n-1]-->length of block & n/(n-fail[n-1]) --># of repetitions 
+					else	 -->there is no solution
 
-    vi fail(x.size(),0);
-    kmp(x,fail);
-    vi mp(x.size()+1,0);
+6- to get freq of all prefix ---->
+
+    string x;cin>>x;
+    vector<int> fail(x.size(),0);
+    compute_prefix(x,fail);
+    vector<int> mp(x.size()+1,0);
     for (int i = 0; i <fail.size() ; ++i) {
         mp[fail[i]]++;
     }
     for (int i = fail.size()-1; i >0 ; --i) {  // mp arr start from one ---> mp[z] z is length of prefix;
         mp[fail[i-1]]+=mp[i];
     }
+    for (int i = 1; i <= x.size(); ++i) {
+        cout<<mp[i]<<' ';//+1 if you count the prefix its self if you don`t count it let it as it `s
+    }
 
-to check if any prefix is a suffix we can go through of all pre suf by useing that--> 8 -->
-8-find second and third longest pre suf---->
-                 while(x>0) {
-                          x = fail[x - 1];
-}
+7- for each pre count his freq in another string ---> 
+---->	two strings p and t count the freq of prefixes of p in t
+	create p@t then compute fail function for this string 
+	the do the same operation as above probelm for fail from index p.size()to the end
+ 	string p,t;cin>>p>>t;
+    	string x=p+"@"+t;
+    	vector<int> fail(x.size(),0);
+   	compute_prefix(x,fail);
+    	vector<int> mp(x.size()+1,0);
+    	for (int i = p.size(); i <fail.size() ; ++i) {
+        	mp[fail[i]]++;
+    	}
+    	for (int i = fail.size()-1; i >0 ; --i) {  // mp arr start from one ---> mp[z] z is length of prefix;
+     	   	mp[fail[i-1]]+=mp[i];
+    	}
+    	for (int i = 1; i <= p.size(); ++i) {
+        	cout<<mp[i]<<' ';
+    	}
+
+8- get the unique previx then if the prefix repeated we will ignore it
+    string x;cin>>x;
+    vector<int> fail(x.size(),0);
+    compute_prefix(x,fail);
+    vector<int> mp(x.size()+1,0);
+    for (int i = 0; i <fail.size() ; ++i) {
+        if(fail[i])
+            mp[fail[i]-1]=1;//mark the repeated prefix then if mp[i]=0 then it is unique prefix
+    }
+    for (int i = 0; i < fail.size(); ++i) {
+        if(mp[i]==0){
+            cout<<x.substr(0,i+1)<<'\n';
+        }
+    }
+
+9-find second and third longest pre suf---->
+
+    while(x>0) {
+        x = fail[x - 1];
+    }
+
+to check if any prefix is a suffix we can go through of all pre suf by useing that--> 9 -->
