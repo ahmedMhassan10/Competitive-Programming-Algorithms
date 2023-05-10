@@ -1,0 +1,236 @@
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///euler path
+
+vector<vll>adj(N);
+ll index=1;
+vll parent(N);
+vll st(N),en(N);
+ll dfs(ll node,ll par){
+    st[node]=index;
+    en[node]=index;
+    parent[node]=par;
+    fvec(item,adj[node]){
+        if(item==par)continue;
+        index++;
+        en[node]=max(en[node],dfs(item,node));
+    }
+    return en[node];
+}
+
+///////////////////
+
+The first problem we solve is as follows: Given a tree T of N nodes, where each node i has Ci coins attached with it.
+You have to choose a subset of nodes such that no two adjacent nodes(i.e. nodes connected directly by an edge) are chosen and sum of coins attached with nodes in chosen subset is maximum.
+
+
+//adjacency list
+//adj[i] contains all neighbors of i
+vector<int> adj[N];
+
+//functions as defined above
+int dp1[N],dp2[N];
+
+//pV is parent of node V
+void dfs(int V, int pV){
+
+    //for storing sums of dp1 and max(dp1, dp2) for all children of V
+    int sum1=0, sum2=0;
+
+    //traverse over all children
+    for(auto v: adj[V]){
+    if(v == pV) continue;
+    dfs(v, V);
+    sum1 += dp2[v];
+    sum2 += max(dp1[v], dp2[v]);
+    }
+
+    dp1[V] = C[V] + sum1;
+    dp2[V] = sum2;
+}
+
+int main(){
+    int n;
+    cin >> n;
+
+    for(int i=1; i<n; i++){
+    cin >> u >> v;
+    adj[u].push_back(v);
+    adj[v].push_back(u);
+    }
+
+    dfs(1, 0);
+    int ans = max(dp1[1], dp2[1]);
+    cout << ans << endl;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Given a tree T of N nodes, calculate longest path between any two nodes(also known as diameter of tree).
+
+Longest path starts from node x and goes into its subtree(denoted by blue lines in the image). Lets define by f(x) this path length.
+Longest path starts in subtree of x, passes through x and ends in subtree of x(denoted by red line in image). Lets define by g(x) this path length.
+
+vector<int> adj[N];
+
+//functions as defined above
+int f[N],g[N],diameter;
+
+//pV is parent of node V
+void dfs(int V, int pV){
+    //this vector will store f for all children of V
+    vector<int> fValues;
+
+    //traverse over all children
+    for(auto v: adj[V]){
+        if(v == pV) continue;
+        dfs(v, V);
+        fValues.push_back(f[v]);
+    }
+
+    //sort to get top two values
+    //you can also get top two values without sorting(think about it) in O(n)
+    //current complexity is n log n
+    sort(fValues.begin(),fValues.end());
+
+    //update f for current node
+    f[V] = 1;
+    if(not fValues.empty()) f[V] += fValues.back();
+
+    if(fValues.size()>=2)
+        g[V] = 1 + fValues.back() + fValues[fValues.size()-2];
+
+    diameter = max(diameter, max(f[V], g[V]));
+}
+void solve(int inde) {
+    ll num;cin>>num;
+    fo(i,num-1){
+        ll u,v;cin>>u>>v;
+        adj[u].push_back(v);
+        adj[v].push_back(u);
+    }
+    dfs(1,-1);
+    cout<<diameter-1;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+get all maximum dist in tree
+
+vector<int> tree[200001];
+int depth[200001];
+int ans[200001];
+ 
+void eval_depth(int src, int par)
+{
+    int src_depth = 0;
+    for(int child : tree[src])
+    {
+        if(child != par)
+        {
+            eval_depth(child, src);
+            src_depth = max(src_depth, 1 + depth[child]);
+        }
+    }
+    depth[src] = src_depth;
+}
+ 
+void solve(int src, int par, int par_ans)
+{
+    vector<int> prefixMax, suffixMax;
+    // get depth of child nodes.
+    for(int child : tree[src])
+    {
+        if(child != par)
+        {
+            prefixMax.push_back(depth[child]);
+            suffixMax.push_back(depth[child]);
+        }
+    }
+    // build prefix and suffix
+    for(int i = 1; i < prefixMax.size(); i++)
+        prefixMax[i] = max(prefixMax[i], prefixMax[i-1]);
+    for(int i = (int)suffixMax.size() - 2; i >= 0; i--)
+        suffixMax[i] = max(suffixMax[i], suffixMax[i+1]);
+ 
+    //eval ans for every child c_no
+    int c_no = 0;
+    for(int child : tree[src])
+    {
+        if(child != par)
+        {
+            int op1 = (c_no == 0) ? INT_MIN : prefixMax[c_no - 1];
+            int op2 = (c_no == (int)suffixMax.size() - 1) ? INT_MIN : suffixMax[c_no + 1];
+            int partial_ans = 1 + max(par_ans, max(op1,op2));
+ 
+            solve(child, src, partial_ans);
+            c_no++;
+        }
+    }
+ 
+    //eval ans for src
+    ans[src] = 1 + max(par_ans, (prefixMax.empty() ? -1 : prefixMax.back()));
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+get the distance between all nodes
+
+
+ll num;
+vector<vector < int > >adj(N);
+vector<bool>vis(N,0);
+vll dist(N,0);
+vll nodes(N,0);
+ 
+void dfs( int node)
+{
+    vis[node] = true;
+    for ( auto child : adj[node]) {
+        if (vis[child] == false) {
+            dfs(child);
+            nodes[node] += 1 + nodes[child];
+            dist[node]+=dist[child];
+        }
+    }
+    dist[node]+=nodes[node];
+}
+ 
+
+void dfs2( int node)
+{
+    vis[node] = true;
+    for ( auto child : adj[node]) {
+        if (vis[child] == false) {
+            dist[child]+=(dist[node]-(nodes[child]+1)-dist[child])+(num-nodes[child]-1);
+            dfs2(child);
+        }
+    }
+}
+
+ 
+void solve(int inde) {
+    cin>>num;
+    fo(i,num-1){
+        ll u,v;cin>>u>>v;
+        adj[u].push_back(v);
+        adj[v].push_back(u);
+    }
+    dfs(1);
+    vis=vector<bool>(N,0);
+    dfs2(1);
+    fp(i,1,num)cout<<dist[i]<<" ";
+}
+
+
+

@@ -1,0 +1,40 @@
+struct Node{
+    Node *nxt[26];
+    int cnt;
+    vector<int>vec;
+    Node()
+    {
+    	// any data You created up intialize it here
+	    cnt = 0;
+        memset(nxt,0,sizeof nxt);
+    }
+}*root;
+
+void insert( string st,int index)
+{
+    Node *cur = root;
+    for( int i = 0 ; i < st.size();i++)
+    {
+        if(!cur->nxt[st[i]-'a'])
+            cur->nxt[st[i]-'a'] = new Node();
+        cur = cur->nxt[st[i]-'a'];
+        cur->cnt++;
+        cur->vec.push_back(index);
+    }
+}
+bool get( string st){
+    Node *cur = root;
+    for( int i = 0 ; i < st.size();i++)
+    {
+        if(!cur->nxt[st[i]-'a']){
+		    return false;
+        }
+	    if(i<st.size())
+            cur = cur->nxt[st[i]-'a'];
+    }
+    return true;
+}
+void func(int index){
+    root=new Node();
+
+}

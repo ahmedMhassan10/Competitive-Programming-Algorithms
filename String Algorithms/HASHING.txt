@@ -1,0 +1,131 @@
+int modInverse(int a, int m)
+{
+    for (int x = 1; x < m; x++)
+        if (((a%m) * (x%m)) % m == 1)
+            return x;
+}
+
+
+-->string hashing
+
+
+
+vi  pw(N);
+vi inv(N);
+
+ll add(ll a, ll b) {
+    return ((a % mod + b % mod) + mod) % mod;
+}
+
+ll mul(ll a, ll b) {
+    return ((a % mod * b % mod) + mod) % mod;
+}
+
+ll minu(ll a, ll b) {
+    return ((a % mod - b % mod) + mod) % mod;
+}
+
+ll fastp(ll a, ll b) {
+    if (b == 0)return ll(1);
+    ll temp = fastp(a, b / 2);
+    ll total = mul(temp, temp);
+    if (b % 2 == 1) {
+        total = mul(total, a);
+    }
+    return total;
+}
+
+void pre() {
+    pw[0] = 1;
+    inv[0] = 1;
+    ll mul_inv = fastp(29, mod - 2);
+    for (int i = 1; i < N; ++i) {
+        pw[i] = mul(pw[i - 1], 29);
+        inv[i] = mul(inv[i - 1], mul_inv);
+    }
+}
+
+void make_hash(string &x, vi &prifx , vi &pw ,vi &inv) {
+    for (int i = 0; i < x.size(); ++i) {
+        ll ind = x[i] - 'a' + 1;
+        prifx[i] = mul(ind, pw[i]);
+        if (i > 0) {
+            prifx[i] = add(prifx[i], prifx[i - 1]);
+        }
+    }
+}
+ll get_value(ll st, ll en, vi &prifx, vi &pw ,vi &inv) {
+    if(st==0)
+        return prifx[en];
+    return mul(minu(prifx[en],prifx[st-1]),inv[st]);
+}
+ 
+
+
+
+--->For pair
+const ll OO = 1e9, mod = 1e9 + 7,mod2=1e9+9, N = 1e3+5;
+vi  pw(N);
+vi inv(N);
+vi  pw2(N);
+vi inv2(N);
+ll add(ll a, ll b,ll mod) {
+    return ((a % mod + b % mod) + mod) % mod;
+}
+
+ll mul(ll a, ll b,ll mod) {
+    return ((a % mod * b % mod) + mod) % mod;
+}
+
+ll minu(ll a, ll b,ll mod) {
+    return ((a % mod - b % mod) + mod) % mod;
+}
+
+ll fastp(ll a, ll b,ll mod) {
+    if (b == 0)return ll(1);
+    ll temp = fastp(a, b / 2,mod);
+    ll total = mul(temp, temp,mod);
+    if (b % 2 == 1) {
+        total = mul(total, a,mod);
+    }
+    return total;
+}
+
+void pre() {
+    pw[0] = 1;
+    inv[0] = 1;
+    pw2[0] = 1;
+    inv2[0] = 1;
+    ll mul_inv = fastp(29, mod - 2,mod);
+    ll mul_inv2=fastp(31, mod2 - 2,mod2);
+    for (int i = 1; i < N; ++i) {
+        pw[i] = mul(pw[i - 1], 29,mod);
+        inv[i] = mul(inv[i - 1], mul_inv,mod);
+        pw2[i] = mul(pw2[i - 1], 31,mod2);
+        inv2[i] = mul(inv2[i - 1], mul_inv2,mod2);
+    }
+}
+vll prifx(N),prifx2(N);
+void make_hash(string &x) {
+    for (int i = 0; i < x.size(); ++i) {
+        ll ind = x[i] - 'a' + 1;
+        prifx[i] = mul(ind, pw[i],mod);
+        prifx2[i] = mul(ind, pw2[i],mod2);
+        if (i > 0) {
+            prifx[i] = add(prifx[i], prifx[i - 1],mod);
+            prifx2[i] = add(prifx2[i], prifx2[i - 1],mod2);
+        }
+    }
+}
+pair<ll,ll> get_pair_value(ll st, ll en) {
+    if(st==0)
+        return {prifx[en],prifx2[en]};
+    return {mul(minu(prifx[en],prifx[st-1],mod),inv[st],mod),mul(minu(prifx2[en],prifx2[st-1],mod2),inv2[st],mod2)};
+}
+ll get_int_value(ll st, ll en, vi &prifx, vi &pw ,vi &inv,ll mod) {
+    if(st==0)
+        return prifx[en];
+    return mul(minu(prifx[en],prifx[st-1],mod),inv[st],mod);
+}
+
+---->to check palindrome get hash then reverse string and get hash if two hashes are equal the string is palindrome

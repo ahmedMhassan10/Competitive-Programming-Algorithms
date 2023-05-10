@@ -1,0 +1,124 @@
+// get the minimum  Hamiltonian path
+
+ll n;
+ll dp[1<<20][20];
+vector<vector<pair<int,int>>>adj(20);
+ll solve(int mask,int node){
+    if (__builtin_popcount(mask) == n) {
+        if (node == n - 1)
+            return 0;
+        return OO;
+    }
+    if(node==n-1)
+        return OO;
+    if(dp[mask][node]!=-1)return dp[mask][node];
+    ll ans=OO;
+    for (auto item:adj[node]) {
+        if(mask&(1<<item.first))continue;
+        ans=min(ans,item.second+ solve(mask|(1<<item.first),item.first));
+    }
+    return dp[mask][node]=ans;
+}
+void func(int index)
+{
+    clr(dp,-1);
+    cin>>n;
+    ll m;
+    cin>>m;
+    for (int i = 0; i < m; ++i) {
+        ll u,v;cin>>u>>v;
+        ll w;cin>>w;
+        u--,v--;
+        adj[u].push_back({v,w});
+        adj[v].push_back({u,w});
+
+    }
+    cout<<solve(1,0);
+}
+
+
+------------------------------------------------------------------------------------------------------------------------
+
+
+// get total number of Hamiltonian path
+ll n;
+ll dp[1<<20][20];
+vector<vector<int>>adj(20);
+ll solve(int mask,int node){
+    if (__builtin_popcount(mask) == n)
+            return node==n-1;
+    if(node==n-1)return 0;
+    if(dp[mask][node]!=-1)
+        return dp[mask][node];
+    ll ans=0;
+    for (auto item:adj[node]) {
+        if(mask&(1<<item))continue;
+        ans=(ans+solve(mask|(1<<item),item)%mod);
+        ans%=mod;
+    }
+    return dp[mask][node]=ans;
+}
+void func(int index)
+{
+    clr(dp,-1);
+    cin>>n;
+    ll m;
+    cin>>m;
+    for (int i = 0; i < m; ++i) {
+        ll u,v;cin>>u>>v;
+        u--,v--;
+        adj[u].push_back(v);
+//        adj[v].push_back(u);
+    }
+    cout<<solve(1,0);
+}
+
+
+------------------------------------------------------------------------------------------------------------------------
+
+
+// get the minimum  Hamiltonian cycle
+ll n;
+ll dp[1<<20][20];
+ll compare=0;
+vector<vector<pair<int,int>>>adj(20);
+ll solve(int mask,int node){
+    if (__builtin_popcount(mask) == n) {
+        for (auto item:adj[node]) {
+            if(item.first==0)return item.second;
+        }
+        return OO;
+    }
+    if(compare&mask==compare)return OO;
+    if(dp[mask][node]!=-1)return dp[mask][node];
+    ll ans=OO;
+    for (auto item:adj[node]) {
+        if(mask&(1<<item.first))continue;
+        ans=min(ans,item.second+ solve(mask|(1<<item.first),item.first));
+    }
+    return dp[mask][node]=ans;
+}
+void func(int index)
+{
+    clr(dp,-1);
+    cin>>n;
+    ll m;
+    cin>>m;
+    for (int i = 0; i < m; ++i) {
+        ll u,v;cin>>u>>v;
+        ll w=1;//cin>>w;
+        u--,v--;
+        adj[u].push_back({v,w});
+        adj[v].push_back({u,w});
+        if(u==0)compare|=(1<<v);
+        if(v==0)compare|=(1<<u);
+    }
+    cout<<solve(1,0);
+}
+
+
+
+------------------------------------------------------------------------------------------------------------------------
+
+
+

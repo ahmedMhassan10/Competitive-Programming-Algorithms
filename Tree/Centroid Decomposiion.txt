@@ -1,0 +1,175 @@
+/// centroid is the node which cut tree into 2 small unconnected trees 
+
+vector<int> g[N];
+int sz[N];
+
+ll ans = 0;
+int cnt[N]{1}, mx_depth;
+bool processed[N];
+
+int get_subtree_sizes(int node, int parent = 0) {//(unchageable)
+    sz[node] = 1;
+    for (int i : g[node]) if (!processed[i] && i != parent)
+            sz[node] += get_subtree_sizes(i, node);
+    return sz[node];
+}
+
+int get_centroid(int desired, int node, int parent = 0) {//(unchageable)-->desired is the new size
+    for (int i : g[node])
+        if (!processed[i] && i != parent && sz[i] >= desired)
+            return get_centroid(desired, i, node);
+    return node;
+}
+
+void get_cnt(int node, int parent, bool filling, int depth = 1) {  //(changable) you count the answer first then increase it in the array
+    if (depth > k) return;
+    mx_depth = max(mx_depth, depth);
+    if (filling) cnt[depth]++;
+    else ans += cnt[k - depth];
+    for (int i : g[node]) 
+	if (!processed[i] && i != parent)
+            get_cnt(i, node, filling, depth + 1);
+}
+
+void centroid_decomp(int node = 1) {
+    int centroid = get_centroid(get_subtree_sizes(node) >> 1, node);//(unchageable)
+    processed[centroid] = true;//(unchageable)
+    mx_depth = 0;
+    for (int i : g[centroid])
+	 if (!processed[i]) {//(changable)
+            get_cnt(i, centroid, false);
+            get_cnt(i, centroid, true);
+    	}
+    fill(cnt + 1, cnt + mx_depth + 1, 0);
+    for (int i : g[centroid]) 
+	if (!processed[i]) 
+		centroid_decomp(i);//(unchageable)
+}
+
+
+//////////////////////////////////////////////////////////////////////////////////
+
+Xenia and Tree problem a3333333333333333333333333333333333333333333333333333333
+
+ll n , ancestor[N][M], lvl[N];
+vector < ll > g[N];
+
+void dfs( ll node , ll par)
+{
+    lvl[node] = lvl[par] + 1;
+    ancestor[node][0] = par;
+    for ( ll j = 1 ; j < M ; j++)
+    {
+        ll p = ancestor[node][j-1];
+        ancestor[node][j] = ancestor[p][j-1];
+    }
+    for(auto ch : g[node])
+    {
+        if(ch == par)
+            continue;
+        dfs(ch,node);
+    }
+}
+
+ll findKthAncestor( ll u , ll k)		//return zero if k > depth --> call dfs(1,0) in main
+{
+    for ( ll j = M-1 ; j >= 0 ; j--)
+        if(k&(1<<j))
+            u = ancestor[u][j];
+    return u;
+}
+
+ll getLCA( ll u , ll v)
+{
+    if(lvl[u] < lvl[v])
+        swap(u,v);
+    u = findKthAncestor(u,lvl[u]-lvl[v]);
+    if ( u == v)
+        return u;
+    for ( ll i = M-1 ; i>= 0 ;i--)
+    {
+        if(ancestor[u][i] == ancestor[v][i])
+            continue;
+        u = ancestor[u][i];
+        v = ancestor[v][i];
+    }
+    return ancestor[u][0];
+}
+
+ll sz[N];
+bool processed[N];
+
+ll get_subtree_sizes(ll node, ll parent = 0) {//(unchageable)
+    sz[node] = 1;
+    for (ll i : g[node]) if (!processed[i] && i != parent)
+            sz[node] += get_subtree_sizes(i, node);
+    return sz[node];
+}
+
+ll get_centroid(ll desired, ll node, ll parent = 0) {//(unchageable)-->desired is the new size
+    for (ll i : g[node])
+        if (!processed[i] && i != parent && sz[i] >= desired)
+            return get_centroid(desired, i, node);
+    return node;
+}
+
+vi parent(N);
+void centroid_decomp(ll node ,ll par) {
+    ll centroid = get_centroid(get_subtree_sizes(node) >> 1, node);//(unchageable)
+    processed[centroid] = true;//(unchageable)
+    parent[centroid]=par;
+    for (ll i : g[centroid])
+        if (!processed[i])
+            centroid_decomp(i,centroid);//(unchageable)
+}
+vll best(N,N);
+ll get_dist(ll u,ll v){
+    ll a= getLCA(u,v);
+    return -2*lvl[a]+lvl[u]+lvl[v];
+}
+void update(ll v) {
+    best[v] = 0;
+
+    ll u = v;
+    while (parent[u] != -1) {
+        u = parent[u];
+        best[u] = min(best[u], get_dist(u, v));
+    }
+}
+
+ll query(ll v) {
+    ll ans = best[v];
+
+    ll u = v;
+    while (parent[u] != -1) {
+        u = parent[u];
+        ans = min(ans, best[u] + get_dist(u, v));
+    }
+    return ans;
+}
+void func(ll index) {
+    // using Centroid decomposition to rearrange the tree so that each update or query only take log(n)
+    // use LCA to compute Distance in Log(n);
+    //so that each query and update only take O(log(N)^2)
+    ll num,q;
+    cin>>num>>q;
+    fo(i,num-1){
+        ll u,v;cin>>u>>v;
+        g[u].push_back(v);
+        g[v].push_back(u);
+    }
+    dfs(1,0);//// Dont put parent in -1 pls it wont pass case 4
+    centroid_decomp(1,-1);
+    update(1);
+    fo(i,q){
+        ll t;cin>>t;
+        if(t==1){
+            ll u;cin>>u;
+            update(u);
+        }else{
+            ll u;cin>>u;
+            cout<<query(u)<<"\n";
+        }
+    }
+
+}

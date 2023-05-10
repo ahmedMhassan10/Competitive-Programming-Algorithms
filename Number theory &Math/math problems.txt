@@ -1,0 +1,96 @@
+
+
+///Josephus Queries
+
+get the  removed child in k th rank in Josephus problem
+
+
+ll f(ll n,ll k)// n the number ,k the rank
+{
+    if(n==1) return 1;
+    if(k<=(n+1)/2)
+    {
+        if(2*k>n) return (2*k)%n;
+        else return 2*k;
+    }
+    ll temp=f(n/2,k-(n+1)/2);
+    if(n%2==1) return 2*temp+1;
+    return 2*temp-1;
+}
+
+///////////////////////////////
+
+get root of quadratic function
+
+
+to get (a^(b^c)) in mod area we use fermat theory 
+
+
+ll fop(ll base, ll exp,ll mod)
+{
+        if (exp == 0)
+            return 1;
+        ll ans = fop(base, exp / 2,mod);
+        ans = (ans * ans) % mod;
+        if (exp % 2 != 0)
+        ans = (ans * (base % mod)) % mod;
+        return ans;
+}
+void solve(int inde) {
+    ll a,b,c;cin>>a>>b>>c;
+    ll bo=fop(b,c,mod-1);
+    cout<<fop(a,bo,mod)<<'\n';
+}
+//////////////////////////
+float a, b, c, x1, x2, discriminant, realPart, imaginaryPart;
+    cout << "Enter coefficients a, b and c: ";
+    cin >> a >> b >> c;
+    discriminant = b*b - 4*a*c;
+    
+    if (discriminant > 0) {
+        x1 = (-b + sqrt(discriminant)) / (2*a);
+        x2 = (-b - sqrt(discriminant)) / (2*a);
+        cout << "Roots are real and different." << endl;
+        cout << "x1 = " << x1 << endl;
+        cout << "x2 = " << x2 << endl;
+    }
+    
+    else if (discriminant == 0) {
+        cout << "Roots are real and same." << endl;
+        x1 = -b/(2*a);
+        cout << "x1 = x2 =" << x1 << endl;
+    }
+
+    else {
+        realPart = -b/(2*a);
+        imaginaryPart =sqrt(-discriminant)/(2*a);
+        cout << "Roots are complex and different."  << endl;
+        cout << "x1 = " << realPart << "+" << imaginaryPart << "i" << endl;
+        cout << "x2 = " << realPart << "-" << imaginaryPart << "i" << endl;
+    }
+
+
+//////////////////////////
+
+
+bool checkPerfectSquare(ll n){
+    ll k = sqrtl(n);
+    if((k * k) == n)
+        return true;
+    k++;
+    if((k * k) == n)
+        return true;
+    return false;
+}
+//////////////////
+get sqrt
+ll mySqrt(int x){
+    ll l=1,r=1e9+5,ans=0,mid;
+    while (l<=r){
+        mid=(l+r)/2;
+        if (mid*mid<=x){
+            ans=mid;
+            l=mid+1;
+        }else r=mid-1;
+    }return ans;
+}

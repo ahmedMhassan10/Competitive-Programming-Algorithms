@@ -1,0 +1,51 @@
+const ll OO = 1e9, mod = 1e9 + 7,mod2=1e9+9, N = 5e5+10,M=25;
+
+ll sp[N][M] , sp2[N][M] , a[N] , lg[N]  ,n;
+void buildSparse(){/// one based
+    lg[1] = 0 ;
+    for(ll i =2;i <=n ; i++){
+        lg[i] = lg[i/2]+1;
+    }
+    for(ll i = 0 ; i< n; i++){
+        sp[i][0] = a[i] ;
+        sp2[i][0] = a[i];
+    }
+    for(ll i = 1;i<M ; i++){
+        for(int j = 0 ; j + (1<<i)<= n ;j++){
+            sp[j][i] = max(sp[j][i-1], sp[j+(1<<(i-1))][i-1]); 
+            sp2[j][i] = min(sp2[j][i-1], sp2[j+(1<<(i-1))][i-1]);
+
+        }
+    }
+
+
+}
+
+ll query_sum(ll l , ll r)
+{
+    ll dist = r-l+1;
+    ll sum = 0 ;
+    for(ll i = M-1;i>=0;i--){
+        if((1<<i) <= dist){
+            dist -= (1<<i);
+            sum += sp[l][i];
+            l += (1<<i);
+        }
+    }
+    return sum;
+}
+
+ll queryMX(ll l , ll r)
+{
+    if(l>r)
+        return 0;
+    ll j = lg[r-l+1];
+    return max(sp[l][j],sp[r-(1<<j)+1][j]);
+}
+ll queryMN(ll l , ll r)
+{
+    if(l>r)
+        return 0;
+    ll j = lg[r-l+1];
+    return min(sp2[l][j],sp2[r-(1<<j)+1][j]);
+}
