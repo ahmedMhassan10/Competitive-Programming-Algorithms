@@ -1,0 +1,64 @@
+ll n;
+ll getEn(int idx,int maxi){ ///work on st;
+    ll st=1, en=n;
+    ll res=st;
+    while (st<=en){
+        ll md=(st+en)/2;
+        if(idx/md>=maxi){
+            res=md;
+            st=md+1;
+        }else en=md-1;
+    }
+    return res;
+}
+
+
+ll getSt(int idx, int mini){  ///work on en;
+    ll st=1, en=n;
+    ll res=en;
+    while (st<=en){
+        ll md=(st+en)/2;
+        if(idx/md>mini){
+            st=md+1;
+        }else {
+            res=md;
+            en=md-1;
+        }
+    }
+    return res;
+}
+
+
+/////////////////////////////////////////
+binary search on sparce table
+
+ll searchMin(int st){ // last biggest segment that i am still minimum
+    int en=n-1;
+    ll res=en;
+    ll ss=st;
+    while (st<=en){
+        ll md=(st+en)/2;
+        if(queryMN(ss,md)==a[ss]){
+            st=md+1;
+            res=md;
+        }else {
+            en=md-1;
+        }
+    }
+    return res;
+}
+ll searchMax(int st){// last biggest segment that i am still maximum
+    int en=n-1;
+    ll res=en;
+    ll ss=st;
+    while (st<=en){
+        ll md=(st+en)/2;
+        if(queryMX(ss,md)==a[ss]){
+            st=md+1;
+            res=md;
+        }else {
+            en=md-1;
+        }
+    }
+    return res;
+}
