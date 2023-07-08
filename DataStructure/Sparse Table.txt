@@ -1,7 +1,7 @@
 const ll OO = 1e9, mod = 1e9 + 7,mod2=1e9+9, N = 5e5+10,M=25;
 
 ll sp[N][M] , sp2[N][M] , a[N] , lg[N]  ,n;
-void buildSparse(){/// one based
+void buildSparse(){/// zero based
     lg[1] = 0 ;
     for(ll i =2;i <=n ; i++){
         lg[i] = lg[i/2]+1;

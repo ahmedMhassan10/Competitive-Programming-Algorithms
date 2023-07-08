@@ -114,54 +114,68 @@ ll solve(ll node,ll l,ll r,ll x){// seg on max
     }else return solve(2*node+1,md+1,r,x);
 }
 // maximum or minimum segment tree
-ll seg[N<<2];
+
+
 ll arr[N];
-ll num;
-ll sum[N<<2], suff[N<<2], pref[N<<2];
+struct point{
+    int seg,sum,suff,pref;
+};
+point seg[N<<2];
+point merge(point node1,point node2){
+
+    point p={0,0,0,0};
+    p.pref = max(node1.pref, node1.sum + node2.pref);
+    p.suff = max(node2.suff, node1.suff + node2.sum);
+    p.seg = max(node1.seg, max(node2.seg, node1.suff + node2.pref));
+    p.sum = node1.sum + node2.sum;
+    return p;
+}
 void Build_seg(ll node,ll l , ll r) {
     if (l == r) {
-        seg[node] = arr[l];
-        pref[node]=arr[l];
-        sum[node] = arr[l];
-        suff[node]=arr[l];
+        seg[node] ={ arr[l],arr[l],arr[l],arr[l]};
         return;
     }
     ll mid = (l + r) / 2;
     Build_seg(node * 2, l, mid);
     Build_seg(node * 2 + 1, mid + 1, r);
-    ll n=node;
-    pref[node] = max(pref[2 * n], sum[2 * n] + pref[2 * n + 1]);
-    suff[node] = max(suff[2 * n + 1], suff[2 * n] + sum[2 * n + 1]);
-    seg[node] = max(seg[2 * n], max(seg[2 * n + 1], suff[2 * n] + pref[2 * n + 1]));
-    sum[node] = sum[2 * n] + sum[2 * n + 1];
+    seg[node]= merge(seg[node*2],seg[node*2+1]);
 }
 void update(ll node,ll l ,ll r,ll idx,ll val) {
     if (l == r) {
-        seg[node] =val;
-        pref[node]=val;
-        sum[node] = val;
-        suff[node]=val;
+        seg[node]={val,val,val,val};
         return;
     }
     ll mid = (l + r) / 2;
     if (idx <= mid) update(node * 2, l, mid, idx,val);
     else update(node * 2 + 1, mid + 1, r, idx,val);
-    ll n=node;
-    pref[node] = max(pref[2 * n], sum[2 * n] + pref[2 * n + 1]);
-    suff[node] = max(suff[2 * n + 1], suff[2 * n] + sum[2 * n + 1]);
-    seg[node] = max(seg[2 * n], max(seg[2 * n + 1], suff[2 * n] + pref[2 * n + 1]));
-    sum[node] = sum[2 * n] + sum[2 * n + 1];
+    seg[node]= merge(seg[node*2],seg[node*2+1]);
 
 }
-ll query(ll node,ll l ,ll r,ll st,ll en) {
-       if(l>en || r<st){
-        return 0;
-       }
-       if(l>=st && r<=en){
-             return seg[node];
-       }
-       ll md= (l+r)/2 ;
-       return (query(node*2,l,md,st,en)+query(node*2+1,md+1,r,st,en));
+point query(ll node,ll l ,ll r,ll st,ll en) {
+    if(l>en || r<st){
+        return {0,0,0,0};
+    }
+    if(l>=st && r<=en){
+        return seg[node];
+    }
+    ll md= (l+r)/2 ;
+    return merge(query(node*2,l,md,st,en),query(node*2+1,md+1,r,st,en));
+}
+ll solve(point p){
+    return max({p.seg,p.sum,p.suff,p.pref});
+}
+void func(int index){
+    ll n;cin>>n;
+    ll q;cin>>q;
+    for (int i = 1; i <= n ; ++i) {
+        cin>>arr[i];
+    }
+    Build_seg(1,1,n);
+    cout<<query(1,1,n,1,n).seg<<endl;
+    while (q--){
+        ll u,v;cin>>u>>v;
+        cout<<query(1,1,n,u,v).seg<<endl;
+    }
 }
 
 
@@ -241,3 +255,195 @@ ll solveEn(ll st,ll en){
         return en;
     }else return OO;
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+dynamic segment tree
+
+
+https://codeforces.com/contest/960/problem/F
+
+
+struct node{
+
+    node *L, *R;
+    int val;
+    node(){
+        val = 0;
+        L = R = NULL;
+    }
+};
+node * seg[N];
+
+void update(node * & cur, int s, int e, int idx,int val){//pass seg[idx] as first Argument
+    if(!cur)
+        cur = new node();
+    cur->val = max(cur->val,val);
+
+    if(s==e)return;
+
+    int md = (s+e)>>1;
+
+    if(idx<=md)
+        update(cur->L,s,md,idx,val);
+    else
+        update(cur->R,md+1,e,idx,val);
+}
+
+int query(node * & cur, int s, int e, int l, int r){
+    if(!cur||r<s||e<l||l>r)return 0;
+    if(l<=s&&e<=r)return cur->val;
+    int md = (s+e)>>1;
+    return max(query(cur->L,s,md,l,r),query(cur->R,md+1,e,l,r));
+}
+
+int main(){
+  ios
+  int n, m;
+  cin >> n >> m;
+  int u, v, w;
+  int ans = 0;
+  while(m--){
+    cin >> u >> v >> w;
+    int x = qry(trees[u],0,1000000,0,w-1);
+    ans = max(ans,x+1);
+    upd(trees[v],0,1000000,w,x+1);
+  }
+ 
+  cout << ans << '\n';
+  return 0;
+}
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+segment on Euler's totient  ( Euler's totient  values is tree rooted at 1 with 22 levels)
+
+https://codeforces.com/contest/1797/problem/E
+
+
+const ll maximum=5e6+5;
+int phi[maximum+10];
+
+ll EulerPhi(ll num) {
+    return phi[num];
+}
+
+int lvl[maximum];
+void pre()//---> taken from Abdel-AzizMostafa
+{
+    phi[0] = 0;
+    phi[1] = 1;
+    for (int i = 2; i < maximum; i++)
+        phi[i] = i - 1;
+    for (int i = 2; i < maximum; i++)
+        for (int j = 2 * i; j < maximum; j += i)
+            phi[j] -= phi[i];
+    for (int i = 2; i < maximum; i++)
+        lvl[i] = lvl[phi[i]] + 1;
+}
+
+int findKthAncestor( int u , int k)		//return zero if k > depth --> call dfs(1,0) in main
+{
+    while (k--)u=phi[u];
+    return u;
+}
+
+int getLCA( int u , int v)
+{
+    if(lvl[u] < lvl[v])
+        swap(u,v);
+    u = findKthAncestor(u,lvl[u]-lvl[v]);
+
+    while (u!=v){
+        u= findKthAncestor(u,1);
+        v= findKthAncestor(v,1);
+    }
+    return u;
+}
+
+ll seg[N<<2], a[N], LCA[N<<2],segLvl[N<<2];
+void Build_seg(ll node,ll l , ll r) {// DONT FORGET BUILD IN MAIN YA 7OMAR
+    if (l == r) {
+        seg[node]=(a[l]!=1);
+        LCA[node]=a[l];
+        segLvl[node]=lvl[a[l]];
+        return;
+    }
+    ll mid = (l + r) / 2;
+    Build_seg(node * 2, l, mid);
+    Build_seg(node * 2 + 1, mid + 1, r);
+    seg[node] = seg[node<<1] + seg[node<<1|1];
+    LCA[node]= getLCA(LCA[node<<1] , LCA[node<<1|1]);
+    segLvl[node] = segLvl[node<<1] + segLvl[node<<1|1];// DONT FORGET BUILD IN MAIN YA 7OMAR
+}
+void update( int node , int l , int r , int s , int e )
+{
+    if ( l > e || r < s)
+        return ;
+    if(seg[node]==0)
+        return;
+    if (l == r) {
+        LCA[node]= findKthAncestor(LCA[node],1);
+        seg[node]=(LCA[node]!=1);
+        segLvl[node]=lvl[LCA[node]];
+        a[l]=LCA[node];
+        return;
+    }
+    int md = l + r >> 1 ;
+    update(node<<1,l,md,s,e),update(node<<1|1,md+1,r,s,e);
+    seg[node] = seg[node<<1] + seg[node<<1|1];
+    LCA[node]= getLCA(LCA[node<<1] , LCA[node<<1|1]);
+    segLvl[node] = segLvl[node<<1] + segLvl[node<<1|1];// DONT FORGET BUILD IN MAIN YA 7OMAR
+
+}
+ll query(ll node,ll l ,ll r,ll st,ll en) {// DONT FORGET BUILD IN MAIN YA 7OMAR
+    if(l>en || r<st){
+        return 0;
+    }
+    if(l>=st && r<=en){
+        return segLvl[node];
+    }
+    ll md= (l+r)/2 ;
+    return (query(node*2,l,md,st,en)+query(node*2+1,md+1,r,st,en));// DONT FORGET BUILD IN MAIN YA 7OMAR
+}
+ll queryLCA(ll node,ll l ,ll r,ll st,ll en) {// DONT FORGET BUILD IN MAIN YA 7OMAR
+    if(l>en || r<st){
+        return 0;
+    }
+    if(l>=st && r<=en){
+        return LCA[node];
+    }
+    ll md= (l+r)/2 ;
+    ll f=queryLCA(node*2,l,md,st,en),s=queryLCA(node*2+1,md+1,r,st,en);
+    if(f==0)return s;
+    if(s==0)return f;
+    return getLCA(f,s);// DONT FORGET BUILD IN MAIN YA 7OMAR
+}
+void func(int index) {
+    ll n,q;cin>>n>>q;
+    for (int i = 1; i <= n ; ++i) {
+        cin>>a[i];
+    }
+    Build_seg(1,1,n);
+    while (q--){
+        ll t;cin>>t;
+        if(t==1){
+            ll st,en;cin>>st>>en;
+            update(1,1,n,st,en);
+        }else {
+            ll st,en;cin>>st>>en;
+            ll sum= query(1,1,n,st,en);
+            ll lca= queryLCA(1,1,n,st,en);
+            cout<<sum-lvl[lca]*(en-st+1)<<endl;
+        }
+    }
+}
+
+
+
+

@@ -237,3 +237,116 @@ ll query( int node , int l , int r , int s , int e)
     int md = l + r >> 1 ;
     return query(node<<1,l,md,s,e)+query(node<<1|1,md+1,r,s,e);
 }
+
+/////////////////////////////////////////////////////////////////////////////////////
+--> the number of operation to create increasing array
+
+in some subsegments
+
+https://cses.fi/problemset/task/2416/
+
+ll seg[N<<2], a[N], lazy[N<<2];
+void build( int node , int l , int r)
+{
+    lazy[node]=0;
+    if( l == r)
+    {
+        seg[node]=a[l];
+        return ;
+    }
+    int md = l + r >> 1 ;
+    build(node<<1,l,md),build(node<<1|1,md+1,r);
+    seg[node] = seg[node<<1] + seg[node<<1|1];
+}
+ 
+void propagate( int node , int l , int r )
+{
+    if(lazy[node] == 0)
+        return;
+    seg[node] = lazy[node] * (r- l + 1);
+    if(l != r) {
+        lazy[node << 1] = lazy[node];
+        lazy[node << 1 | 1] = lazy[node];
+    }
+    lazy[node] = 0;
+}
+ 
+void update( int node , int l , int r , int s , int e , int val)
+{
+    propagate(node,l,r);
+    if ( l > e || r < s)
+        return ;
+    if ( l >= s and r <= e)
+    {
+        lazy[node] = val;
+        propagate( node , l, r);
+        return;
+    }
+    int md = l + r >> 1 ;
+    update(node<<1,l,md,s,e,val),update(node<<1|1,md+1,r,s,e,val);
+    seg[node] = seg[node<<1] + seg[node<<1|1];
+}
+ 
+ll query( int node , int l , int r , int s , int e)
+{
+    propagate(node,l,r);
+    if ( l > e || r < s)
+        return 0;
+    if ( l >= s and r <= e)
+        return seg[node];
+    int md = l + r >> 1 ;
+    return query(node<<1,l,md,s,e)+query(node<<1|1,md+1,r,s,e);
+}
+ 
+void func(int index) {
+    ll n;cin>>n;
+    ll m;cin>>m;
+    int  mnr[n], mxr[n];
+    vector<int>prif(n);
+    for(int i = 0; i < n; i++) {
+        cin >> a[i];
+        prif[i]=a[i];
+        if(i)
+            prif[i]+=prif[i-1];
+    }
+    build(1,0,n-1);
+    stack<int>  s4,s3;
+    for(int i = 0; i < n; i++) {
+        while(!s4.empty() && a[s4.top()] > a[n - 1 - i])
+            s4.pop();
+        while(!s3.empty() && a[s3.top()] < a[n - 1 - i])
+            s3.pop();
+        mnr[n - 1 - i] = s4.empty() ? -1: s4.top() - (n - 1 - i);//distance
+        mxr[n - 1 - i] = s3.empty() ? -1: s3.top() - (n - 1 - i);//distance
+        s4.push(n - 1 - i);
+        s3.push(n - 1 - i);
+    }
+ 
+    vector<int>res(m);
+    vector<pair<pair<int,int>,int>>q;
+    for (int i = 0; i < m; ++i) {
+        ll u,v;cin>>u>>v;
+        u--,v--;
+        q.push_back({{u,v},i});
+    }
+    sort(q.begin(),q.end());
+    ll last=m-1;
+    for (int i = n-1; i >=0 ; i--) {
+        if(mxr[i]!=-1){
+            update(1,0,n-1,i,mxr[i]+i-1,a[i]);
+        }else update(1,0,n-1,i,n-1,a[i]);
+        while (last>=0&&q[last].first.first>=i){
+            ll v=0;
+            ll qq=query(1,0,n-1,q[last].first.first,q[last].first.second);
+            if(q[last].first.first!=0)
+                v=prif[q[last].first.first-1];
+            ll t1=prif[q[last].first.second]-v;
+            res[q[last].second]=-t1+qq ;
+            last--;
+        }
+    }
+ 
+    for (int i = 0; i < m; ++i) {
+        cout<<res[i]<<'\n';
+    }
+}

@@ -1,4 +1,4 @@
-/// 2d segment tree on max and min
+/// 2d quad tree on max and min
 
 #define Max 501
 #define INF (1 << 30)
@@ -162,7 +162,7 @@ void func(int ind) {
 
 ///////////////////////////////////////////////////////////
 
----> segment tree on sum
+---> quad tree on sum
 
 #define Max 501
 #define INF (1 << 30)
