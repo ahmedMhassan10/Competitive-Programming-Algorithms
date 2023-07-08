@@ -1,0 +1,192 @@
+////////////////////////////////////////////////////////////////////////////
+
+
+
+used with 	-impartial games :- same moves allowed to each of two players
+	   	- No Draw
+		-Finite 
+there is winning position / losing position /terminal position
+
+Move duplication strategy :- do same operation of other player to save the winning position by mirroring
+  
+Move cancellation strategy :- 	do operation to cancel operation of other player to save the winning position by mirroring
+				+ ---> -
+				%4=0 ====> +3--->+1  			     	
+
+
+
+////////////////////////////////////////////////////////////////////////////
+
+======> NIM
+
+some piles xor the values of it xorVal==0 ==> losing
+				else winning
+    ll n;cin>>n;
+    vector<int>vec(n);
+    ll xorVal=0;
+    for (int i = 0; i < n; ++i) {
+        xorVal^=vec[i];
+    }
+    if(xorVal){
+        cout<<"FIRST\n";
+        for (int i = 0; i < n; ++i) {
+            if(vec[i]>(vec[i]^xorVal)){
+                cout<<"FIRST "<<(vec[i]-(vec[i]^xorVal))<<" FROM PILE "<<i+1<<'\n'; //print the move 
+                break;
+            }
+        }
+    }else {
+	cout<<"SECOND\n"; // any move is losing move
+    }
+
+
+in misere game check 	if all element in array <=1 reverse the Nim
+			else use Normal Nim
+
+
+Nim - k ==>	if we remove from exactly k piles
+		calculate counter for every bit if the counter % (k+1)==0 for every bit then it will be lose position 
+						else it will be win position
+
+
+
+In case of skip moves then if 	Fskip > Sskip then first will win
+
+				Fskip < Sskip then second will win
+
+				else apply Nim 
+
+
+Tutrles Game  ====>  	flip head and you can flip other coin before it  ---> HHTHH ==> HHHHT
+			then we can apply NIM on the position on each head {1,2,4,5} 
+			if we must flip one before then decrease one from each pile 
+
+
+Silver Dollar Game ===>	move coin to left and can`t move on other one 
+			we will group each two from the end and apply Nim on the distance between each two in group
+
+
+////////////////////////////////////////////////////////////////////////////
+
+======> GRUNDY
+
+--> use mexes to calc values to simulate piles values in NIM
+--> convert big game to some independent sub-game then calc there mexes solve it using dp then get the pattern 
+--> apply Nim of the values of each subgames
+--> NO Misere games
+
+int getMex(set<int>&se){
+    ll v=0;
+    while (se.find(v)!=se.end())v++;
+    return v;
+}
+
+==>1 pile of stones, Moves: Player takes 1, 2, 3
+
+there is pattern that ===> res = n%4;
+
+ll dp[N];
+int solve(int idx){
+    if(idx==0)return 0;
+    if(dp[idx]!=-1)return dp[idx];
+    set<int>se;
+    for (int i = 1; i <=3 ; ++i) {
+        if(idx-i<0)break;
+        se.insert(solve(idx-i));
+    }
+    return dp[idx]= getMex(se);
+}
+void func(int index) {
+    clr(dp,-1);//we can solve in main if there is many queries 
+    ll n;cin>>n;
+    cout<<solve(n)<<'\n';
+}
+
+
+
+==> Move is to divide by 2, 3 or 6 (and take floor)
+
+ll dp[N];
+int solve(int idx){
+    if(idx==0)return 0;
+    if(dp[idx]!=-1)return dp[idx];
+    set<int>se;
+    vector<int>v={2,3,6};
+    for (int i = 0; i <3 ; ++i) {
+        se.insert(solve(idx/v[i]));
+    }
+    return dp[idx]= getMex(se);
+}
+
+
+
+==> use mask to calc grundy
+==> player pick 1 row, and remove up to 3 consecutive numbers
+// solve the pile game one m values only 
+
+ll dp[1<<20];// 20 is max value of n
+ll n;
+ll solve(int mask){// O( 2^n  * n * m)
+    if(__builtin_popcount(mask)>=n)return 0;
+    if(dp[mask]!=-1)return dp[mask];
+    set<int>se;
+    for (int i = 0; i < n; ++i) {
+        if(mask&(1<<i))continue;
+        ll temp=mask;
+        for (int j = 0; j < 3; ++j) {
+            if(i+j>=n)break;
+            if(temp&(1<<(i+j)))break;
+            temp|=(1<<(i+j));
+            se.insert(solve(temp));
+        }
+    }
+    ll v=0;
+    for(;;v++){
+        if(se.find(v)==se.end())break;
+    }
+    return v;
+}
+void func(int index) {
+    clr(dp,-1);
+    cin>>n;
+    cout<<"1st-->"<<solve(0)<<endl;
+}
+
+==> Take & Break --> if single move create some independent sub-games then xor the value of thes G and put it in Mex set
+
+
+-Remove any number of coins from one pile as in nim
+-Split one pile to 2 non-empty piles (This rule is a single
+ move of multiple independent sub-games)
+
+pattern is -->	if(n%4==0) res=n-1;
+		else if((n+1)%4==0)res=n+1;
+		else res=n;
+		
+
+int getMex(set<int>&se){
+    ll v=0;
+    while (se.find(v)!=se.end())v++;
+    return v;
+}
+ll dp[1000];
+int solve(int idx){
+    if (idx==0)return 0;
+    if(dp[idx]!=-1)return dp[idx];
+    set<int>se;
+    for (int i = 1; i <=idx ; ++i) {
+        se.insert(solve(idx-i));
+        if(i!=idx){
+            se.insert(solve(idx-i)^ solve(i));
+        }
+    }
+    return dp[idx]= getMex(se);
+
+}
+void func(int index) {
+    for (int n = 0; n <= 100; ++n) {
+        cout<<n<<" ---> "<<solve(n)<<endl;
+
+    }
+}
+

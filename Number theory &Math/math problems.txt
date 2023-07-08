@@ -41,7 +41,9 @@ void solve(int inde) {
     ll bo=fop(b,c,mod-1);
     cout<<fop(a,bo,mod)<<'\n';
 }
-//////////////////////////
+
+//////////////////////////////////////////////////////////////////////////////
+
 float a, b, c, x1, x2, discriminant, realPart, imaginaryPart;
     cout << "Enter coefficients a, b and c: ";
     cin >> a >> b >> c;
@@ -70,7 +72,7 @@ float a, b, c, x1, x2, discriminant, realPart, imaginaryPart;
     }
 
 
-//////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 
 
 bool checkPerfectSquare(ll n){
@@ -94,3 +96,19 @@ ll mySqrt(int x){
         }else r=mid-1;
     }return ans;
 }
+//////////////////////////////////////////////////////////////////////////////
+
+to create array that handle this condition
+
+---> 	a(r1,c1)+a(r2,c2)!=a(r1,c2)+a(r2,c1) (mod n)
+
+---> 	then there are many conditions to handle this
+    
+1)	A(i,j)=i*j (mod n)
+
+2)	A(i,j)=(i+j)^2 (mod n)
+
+3)	A(i,j)=(i+j)*(i+j+1)/2 (mod n)
+
+4)	A(i,j)=a(i^2)+b*i*j+c*(j^2)+d*i+e*j+f (mod n) for every a,b,c,d,e,f that (mod n)!=0
+
