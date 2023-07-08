@@ -140,3 +140,140 @@ binary lifting build
             dp[i][j]=dp[i-1][dp[i-1][j]];
         }
     }
+
+
+////////////////////////////////////////////////////////////////
+
+get minimum and maximum sub segment in path from a to b in tree
+
+
+struct point{
+    int seg=0,sum=0,suff=0,pref=0;
+    int segMn=0,sumMn=0,suffMn=0,prefMn=0;
+};
+
+point merge(point node1,point node2){
+    point p={0,0,0,0,0,0,0,0};
+    p.pref = max(node1.pref, node1.sum + node2.pref);
+    p.suff = max(node2.suff, node1.suff + node2.sum);
+    p.seg = max(node1.seg, max(node2.seg, node1.suff + node2.pref));
+    p.sum = node1.sum + node2.sum;
+    p.prefMn = min(node1.prefMn, node1.sumMn + node2.prefMn);
+    p.suffMn = min(node2.suffMn, node1.suffMn + node2.sumMn);
+    p.segMn = min(node1.segMn, min(node2.segMn, node1.suffMn + node2.prefMn));
+    p.sumMn = node1.sumMn + node2.sumMn;
+    return p;
+}
+
+int ancestor[N][M], lvl[N];
+vector<vector<int>>adj(N);
+vector<int>edge_cost(N);
+vector<vector<point>>up(N,vector<point>(M));
+
+void dfs( int node , int par)
+{
+    lvl[node] = lvl[par] + 1;
+    ancestor[node][0] = par;
+
+    for ( int j = 1 ; j < M ; j++)
+    {
+        int p = ancestor[node][j-1];
+        ancestor[node][j] = ancestor[p][j-1];
+    }
+    for(auto ch : adj[node])
+    {
+        if(ch == par)
+            continue;
+        dfs(ch,node);
+    }
+}
+int findKthAncestor( int u , int k)		//return zero if k > depth --> call dfs(1,0) in main
+{
+    for ( int j = M-1 ; j >= 0 ; j--)
+        if(k&(1<<j))
+            u = ancestor[u][j];
+    return u;
+}
+point findKthPoint( int u , int k)// don`t merge lCA point
+{
+    point p={0,0,0,0,0,0,0,0};
+    for ( int j = M-1 ; j >= 0 ; j--)
+        if(k&(1<<j)) {
+            p= merge(p,up[u][j]);
+            u = ancestor[u][j];
+        }
+    return p;
+}
+int getLCA( int u , int v)
+{
+    if(lvl[u] < lvl[v])
+        swap(u,v);
+    u = findKthAncestor(u,lvl[u]-lvl[v]);
+    if ( u == v)
+        return u;
+    for ( int i = M-1 ; i>= 0 ;i--)
+    {
+        if(ancestor[u][i] == ancestor[v][i])
+            continue;
+        u = ancestor[u][i];
+        v = ancestor[v][i];
+    }
+    return ancestor[u][0];
+}
+
+struct queryS{
+    ll u,v,c;
+};
+void func(int index){
+    ll n=1, q;
+    cin>>q;
+    vector<queryS>edge;
+    vector<queryS>nodes;
+    for (int i = 0; i < q; ++i) {
+        char ch;cin>>ch;
+        if(ch=='+'){
+            ll u,v;cin>>u>>v;
+            n++;
+            nodes.push_back({u,n,v});
+        }else{
+            ll u,v,c;cin>>u>>v>>c;
+            edge.push_back({u,v,c});
+        }
+    }
+    for (int i = 0; i < n+1; ++i) {
+        adj[i].clear();
+        edge_cost[i]=0;
+        up[i][0]=point();
+    }
+    edge_cost[1]=1;
+    for (int i = 0; i <nodes.size() ; ++i) {
+        auto item=nodes[i];
+        edge_cost[item.v]=item.c;
+        ll x=item.u,y=item.v;
+        adj[x].push_back(y);
+        adj[y].push_back(x);
+    }
+    for (int i = 1; i <= n; ++i) {
+        up[i][0]={ max(edge_cost[i],(ll)0),(edge_cost[i]),max(edge_cost[i],(ll)0),max(edge_cost[i],(ll)0),min(edge_cost[i],(ll)0),(edge_cost[i]),min(edge_cost[i],(ll)0),min(edge_cost[i],(ll)0)};
+    }
+    dfs(1,0);
+    for ( int j = 1 ; j < M ; j++)
+    {
+        for (int node = 1; node <=  n; ++node) {
+            up[node][j]= merge(up[node][j-1],up[ancestor[node][j-1]][j-1]);
+        }
+    }
+    for (auto item:edge) {
+        ll x=item.u,y=item.v;
+        ll lca= getLCA(x,y);
+        point resX= findKthPoint(x,abs(lvl[lca]-lvl[x]));
+        point resY= findKthPoint(y, abs(lvl[lca]-lvl[y]));
+        ll maxi=max({resX.seg,resY.seg,resX.suff+edge_cost[lca],resY.suff+edge_cost[lca]}),mini=min({resX.segMn,resY.segMn,resX.suffMn+edge_cost[lca],resY.suffMn+edge_cost[lca]});
+
+        maxi=max(maxi,resY.suff+resX.suff+edge_cost[lca]);
+        mini=min(mini,resY.suffMn+resX.suffMn+edge_cost[lca]);
+        if(item.c>=mini&&item.c<=maxi){
+            cout<<"YES\n";
+        }else cout<<"NO\n";
+    }
+}

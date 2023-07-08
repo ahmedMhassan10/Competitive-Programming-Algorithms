@@ -51,8 +51,13 @@ void centroid_decomp(int node = 1) {
 
 Xenia and Tree problem a3333333333333333333333333333333333333333333333333333333
 
-ll n , ancestor[N][M], lvl[N];
+
+ll  ancestor[N][M], lvl[N];
 vector < ll > g[N];
+ll sz[N];
+bool processed[N];
+vector<int> parent(N);
+vector<int> best(N,N);
 
 void dfs( ll node , ll par)
 {
@@ -96,8 +101,6 @@ ll getLCA( ll u , ll v)
     return ancestor[u][0];
 }
 
-ll sz[N];
-bool processed[N];
 
 ll get_subtree_sizes(ll node, ll parent = 0) {//(unchageable)
     sz[node] = 1;
@@ -113,7 +116,8 @@ ll get_centroid(ll desired, ll node, ll parent = 0) {//(unchageable)-->desired i
     return node;
 }
 
-vi parent(N);
+
+
 void centroid_decomp(ll node ,ll par) {
     ll centroid = get_centroid(get_subtree_sizes(node) >> 1, node);//(unchageable)
     processed[centroid] = true;//(unchageable)
@@ -122,7 +126,6 @@ void centroid_decomp(ll node ,ll par) {
         if (!processed[i])
             centroid_decomp(i,centroid);//(unchageable)
 }
-vll best(N,N);
 ll get_dist(ll u,ll v){
     ll a= getLCA(u,v);
     return -2*lvl[a]+lvl[u]+lvl[v];

@@ -38,7 +38,7 @@ void clearFromValues(int node){   /// clear un keeped subtree(changable)
         if(!visited[item])clearFromValues(item);
     }
 }
-void dfs(int node,int par,bool keep){    // all sack problems has same imp but some changes in insertion implementation 
+void dfs(int node,int par,bool keep=0){    // all sack problems has same imp but some changes in insertion implementation 
 
 
     int maxSz=-1,greatNode=-1;
@@ -78,5 +78,98 @@ void dfs(int node,int par,bool keep){    // all sack problems has same imp but s
     if(maxSz!=-1)visited[greatNode]=0;//(un changable)
     if(keep == false){ //(un changable)
         clearFromValues(node);
+    }
+}
+
+
+////////////////////////////////////////////////////////////////////////
+
+https://codeforces.com/contest/1805/problem/E
+
+
+vector<vector<int>>g(N);
+vector<int>cost(N);
+set<int>two;
+ll maxTake=0;
+map<int,int>costssss;
+int sz[N],dep[N];
+vector<vector<pair<int,int>>>query(N);
+vector<bool>visited(N,0);
+set<int>in,out;
+map<int,int>inM,outM;
+vector<int> res(N);
+map<pair<int,int>,int>edges;
+void getsz(int v, int p){
+    sz[v] = 1;
+    dep[v]=1;
+    if(p!=-1)
+        dep[v]=dep[p]+1;
+    for(auto u : g[v])
+        if(u != p){
+            getsz(u, v);
+            sz[v] += sz[u];
+        }
+}
+
+
+void insertInValues(int node,int par){ ///insert new subtree(changable)
+
+    ll c=cost[node];
+    if(outM[c]==2){
+        out.erase(c);
+    }else in.insert(c);
+    outM[c]--;
+    inM[c]++;
+    for(auto item:g[node]){
+        if(!visited[item]&&item!=par)
+            insertInValues(item,node);
+    }
+}
+void clearFromValues(int node,int par){   /// clear un keeped subtree(changable)
+    ll c=cost[node];
+    if(inM[c]==2){
+        in.erase(c);
+    }else out.insert(c);
+    outM[c]++;
+    inM[c]--;
+    for(auto item:g[node]){
+        if(!visited[item]&&par!=item)
+            clearFromValues(item,node);
+    }
+}
+void dfs(int node,int par,bool keep=0){    // all sack problems has same imp but some changes in insertion implementation
+    int maxSz=-1,greatNode=-1;
+    for(auto item:g[node]){//(un changable)
+        if(item==par)continue;
+        if(sz[item]>maxSz){
+            maxSz=sz[item];
+            greatNode=item;
+        }
+    }
+    for(auto item:g[node]){//(un changable)
+        if(item!=par&&greatNode!=item)
+        {
+            dfs(item,node,0);
+        }
+    }
+    if(maxSz!=-1){//(un changable)
+        dfs(greatNode,node,1);
+        visited[greatNode]=1;
+    }
+    insertInValues(node,par);
+
+    ll ans=maxTake;
+
+    if(out.size())ans=max(ans,*out.rbegin());
+
+    if(in.size())ans=max(ans,*in.rbegin());
+
+    res[edges[{min(node,par),max(node,par)}]]=ans;
+
+    if(maxSz!=-1)
+        visited[greatNode]=0;//(un changable)
+
+    if(keep == false){ //(un changable)
+        clearFromValues(node,par);
     }
 }

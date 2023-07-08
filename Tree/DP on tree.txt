@@ -19,9 +19,10 @@ ll dfs(ll node,ll par){
     return en[node];
 }
 
-///////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 The first problem we solve is as follows: Given a tree T of N nodes, where each node i has Ci coins attached with it.
+
 You have to choose a subset of nodes such that no two adjacent nodes(i.e. nodes connected directly by an edge) are chosen and sum of coins attached with nodes in chosen subset is maximum.
 
 
@@ -124,16 +125,18 @@ void solve(int inde) {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-get all maximum dist in tree
+get all maximum dist in tree (#of edgess)
 
-vector<int> tree[200001];
-int depth[200001];
-int ans[200001];
- 
+vector<int> trees[N];
+int depth[N];
+int ans[N];
+vector<int>lvl(N);;
+
 void eval_depth(int src, int par)
 {
-    int src_depth = 0;
-    for(int child : tree[src])
+    lvl[src]=lvl[par]+1;
+    int src_depth = 1;
+    for(int child : trees[src])
     {
         if(child != par)
         {
@@ -143,12 +146,12 @@ void eval_depth(int src, int par)
     }
     depth[src] = src_depth;
 }
- 
+
 void solve(int src, int par, int par_ans)
 {
     vector<int> prefixMax, suffixMax;
     // get depth of child nodes.
-    for(int child : tree[src])
+    for(int child : trees[src])
     {
         if(child != par)
         {
@@ -156,34 +159,30 @@ void solve(int src, int par, int par_ans)
             suffixMax.push_back(depth[child]);
         }
     }
-    // build prefix and suffix
     for(int i = 1; i < prefixMax.size(); i++)
         prefixMax[i] = max(prefixMax[i], prefixMax[i-1]);
     for(int i = (int)suffixMax.size() - 2; i >= 0; i--)
         suffixMax[i] = max(suffixMax[i], suffixMax[i+1]);
- 
-    //eval ans for every child c_no
     int c_no = 0;
-    for(int child : tree[src])
+    for(int child : trees[src])
     {
         if(child != par)
         {
             int op1 = (c_no == 0) ? INT_MIN : prefixMax[c_no - 1];
             int op2 = (c_no == (int)suffixMax.size() - 1) ? INT_MIN : suffixMax[c_no + 1];
             int partial_ans = 1 + max(par_ans, max(op1,op2));
- 
+
             solve(child, src, partial_ans);
             c_no++;
         }
     }
- 
-    //eval ans for src
-    ans[src] = 1 + max(par_ans, (prefixMax.empty() ? -1 : prefixMax.back()));
+    ans[src] =max(par_ans, (prefixMax.empty() ? -1 : prefixMax.back()));
 }
 
 
 
 ///////////////////////////////////////////////////////////////////////////////
+
 get the distance between all nodes
 
 
@@ -232,5 +231,5 @@ void solve(int inde) {
     fp(i,1,num)cout<<dist[i]<<" ";
 }
 
-
+///////////////////////////////////////////////////////////////////////////////
 

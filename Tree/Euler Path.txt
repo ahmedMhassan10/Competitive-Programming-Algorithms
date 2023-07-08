@@ -1,0 +1,98 @@
+ll seg[N<<2], a[N], lazy[N<<2];
+ll num,q;
+void build( int node , int l , int r)
+{
+    lazy[node]=0;
+    if( l == r)
+    {
+        seg[node]=a[l];
+        return ;
+    }
+    int md = l + r >> 1 ;
+    build(node<<1,l,md),build(node<<1|1,md+1,r);
+    seg[node] = seg[node<<1] + seg[node<<1|1];
+}
+ 
+void propagate( int node , int l , int r )
+{
+    if(lazy[node] == 0)
+        return;
+    seg[node] += lazy[node] * (r- l + 1);
+    if(l != r) {
+        lazy[node << 1] += lazy[node];
+        lazy[node << 1 | 1] += lazy[node];
+    }else a[l]=seg[node];
+    lazy[node] = 0;
+}
+ 
+void update( int node , int l , int r , int s , int e , int val)
+{
+    propagate(node,l,r);
+    if ( l > e || r < s)
+        return ;
+    if ( l >= s and r <= e)
+    {
+        lazy[node] = val;
+        propagate( node , l, r);
+        return;
+    }
+    int md = l + r >> 1 ;
+    update(node<<1,l,md,s,e,val),update(node<<1|1,md+1,r,s,e,val);
+    seg[node] = seg[node<<1] + seg[node<<1|1];
+}
+ 
+ll query( int node , int l , int r , int s , int e)
+{
+    propagate(node,l,r);
+    if ( l > e || r < s)
+        return 0;
+    if ( l >= s and r <= e)
+        return seg[node];
+    int md = l + r >> 1 ;
+    return query(node<<1,l,md,s,e)+query(node<<1|1,md+1,r,s,e);
+}
+vector<vector < int > >adj(N);
+vector<bool>vis(N,0);
+vll st(N,0),en(N,0);
+ll ind=0;
+vll value(N);
+ 
+void dfs( int node,int par)
+{
+    vis[node] = true;
+    st[node]=en[node]=ind--;
+    a[en[node]]=value[node];
+    if(par!=-1){
+        a[en[node]]+=a[en[par]];
+    }
+    for ( auto child : adj[node])
+        if(vis[child] == false)
+        {
+            dfs(child,node);
+            st[node]=min(st[node],st[child]);
+        }
+}
+void func(int inde) {
+    cin>>num;ll q;cin>>q;
+    ind=num;
+    fp(i,1,num)cin>>value[i];
+    fo(i,num-1){
+        ll u,v;cin>>u>>v;
+        adj[u].push_back(v);
+        adj[v].push_back(u);
+    }
+    dfs(1,-1);
+    build(1,1,num);
+    fo(i,q){
+        ll t;cin>>t;
+        if(t==1){
+            ll u,v;cin>>u>>v;
+            ll vv= query(1,1,num,en[u],en[u]);
+            update(1,1,num,st[u],en[u],v-value[u]);
+            value[u]=v;
+        }else {
+            ll u;cin>>u;
+            cout<<query(1,1,num,en[u],en[u])<<'\n';
+        }
+    }
+}
