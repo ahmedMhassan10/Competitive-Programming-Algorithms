@@ -374,3 +374,31 @@ void func(int index){
         }
     }
 }
+
+//////////////////////////////////////////////////
+// or we can use this technique
+
+void func(int index){
+    ll n,q;cin>>n>>q;
+    ll u;
+    cin>>u;
+    pitem root=new item(u);
+    for (int i = 1; i < n; ++i) {
+        cin>>u;
+        merge(root,root,new item(u));
+    }
+    while (q--){
+        ll t;cin>>t;
+        ll st,en;cin>>st>>en;
+        if(t==1){
+            reverse(root,st,en);
+        }else{
+            pitem l1,r1,l2,r2;
+            split(root,l1,r1,st-1);
+            split(r1,l2,r2,en-st+1);
+            cout<<l2->sum<<endl;
+            merge(root,l1,l2);
+            merge(root,root,r2);
+        }
+    }
+}
