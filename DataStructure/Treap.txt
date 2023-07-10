@@ -92,6 +92,7 @@ pitem build (vector<int>& a, int n) { // build in o(N) based on array a with len
     upd_cnt(t);
     return t;
 }
+
 void output (pitem t) {
     if (!t)  return;
     output (t->l);
@@ -106,11 +107,12 @@ void output (pitem t) {
 
 
 struct item {
-    int key, prior,cnt=1;
+    int  prior,cnt=1;
+    char key;
     item *l, *r;
     item () { }
-    item (int key) : key(key), prior(rand()), l(NULL), r(NULL) { }
-    item (int key, int prior) : key(key), prior(prior), l(NULL), r(NULL) { }
+    item (char key) : key(key), prior(rand()), l(NULL), r(NULL) { }
+    item (char key, int prior) : key(key), prior(prior), l(NULL), r(NULL) { }
 };
 typedef item* pitem;
 
@@ -123,10 +125,7 @@ void upd_cnt (pitem t) {
         t->cnt = 1 + cnt(t->l) + cnt (t->r);
 }
 
-
 // use merge and split to insert & erase elelment
-
-
 
 void merge (pitem & t, pitem l, pitem r) {
     if (!l || !r)
@@ -152,18 +151,45 @@ void split (pitem t, pitem & l, pitem & r, int key, int add = 0) {  // l the fir
 void output (pitem t) {
     if (!t)  return;
     output (t->l);
-    printf ("%d ", t->value);
+    cout<< t->key;
     output (t->r);
 }
+
+void func(int index){
+    ll n,q;cin>>n>>q;
+    string str;cin>>str;
+    pitem root=new item(str[0]);
+    for (int i = 1; i < n; ++i) {
+        merge(root,root,new item(str[i]));
+    }
+    while (q--){
+        ll st,en;cin>>st>>en;
+        ll rem=en-st+1;
+        pitem l1,r1,l2,r2;
+        split(root,l1,r1,st-1);
+        split(r1,l2,r2,rem);
+        merge(root,l1,r2);
+        merge(root,root,l2);
+    }
+    output(root);
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
+
+///// reverse or lazy treap
+////  https://cses.fi/problemset/task/2073
+
 typedef struct item * pitem;
 struct item {
-    int prior, value, cnt;
+    int prior, cnt;
     bool rev;
+    char value;
     pitem l, r;
+    item (char value) : value(value), prior(rand()), l(NULL), r(NULL) { }
+    item (char value, int prior) : value(value), prior(prior), l(NULL), r(NULL) { }
 };
 
 int cnt (pitem it) {
@@ -175,7 +201,7 @@ void upd_cnt (pitem it) {
         it->cnt = cnt(it->l) + cnt(it->r) + 1;
 }
 
-void push (pitem it) { 		// we use it as lazy propagation 
+void push (pitem it) { 		// we use it as lazy propagation
     if (it && it->rev) {
         it->rev = false;
         swap (it->l, it->r);
@@ -210,7 +236,7 @@ void split (pitem t, pitem & l, pitem & r, int key, int add = 0) {
 
 void reverse (pitem t, int l, int r) {
     pitem t1, t2, t3;
-    split (t, t1, t2, l);
+    split (t, t1, t2, l-1);
     split (t2, t2, t3, r-l+1);
     t2->rev ^= true;
     merge (t, t1, t2);
@@ -221,6 +247,130 @@ void output (pitem t) {
     if (!t)  return;
     push (t);
     output (t->l);
-    printf ("%d ", t->value);
+    cout<<t->value;
     output (t->r);
+}
+
+void func(int index){
+    ll n,q;cin>>n>>q;
+    string str;cin>>str;
+    pitem root=new item(str[0]);
+    for (int i = 1; i < n; ++i) {
+        merge(root,root,new item(str[i]));
+    }
+    while (q--){
+        ll st,en;cin>>st>>en;
+        reverse(root,st,en);
+    }
+    output(root);
+}
+/////////////////////////////////////////////////////////////////////////////////////
+
+
+// to get sum we handle it by prefix sums
+// https://cses.fi/problemset/task/2074
+
+typedef struct item * pitem;
+struct item {
+    int prior, cnt;
+    bool rev;
+    int value;
+    int sum;
+    pitem l, r;
+    item (int value) : value(value),sum(value), prior(rand()), l(NULL), r(NULL) { }
+    item (int value, int prior) : value(value), prior(prior), l(NULL), r(NULL) { }
+};
+
+int cnt (pitem it) {
+    return it ? it->cnt : 0;
+}
+int sm(pitem it){
+    return it ? it->sum : 0;
+}
+void upd_cnt (pitem it) {
+    if (it)
+    {
+        it->cnt = cnt(it->l) + cnt(it->r) + 1;
+        it->sum=sm(it->l)+sm(it->r)+it->value;
+    }
+}
+
+void push (pitem it) { 		// we use it as lazy propagation
+    if (it && it->rev) {
+        it->rev = false;
+        swap (it->l, it->r);
+        if (it->l)  it->l->rev ^= true;
+        if (it->r)  it->r->rev ^= true;
+    }
+}
+
+void merge (pitem & t, pitem l, pitem r) {
+    push (l);
+    push (r);
+    if (!l || !r)
+        t = l ? l : r;
+    else if (l->prior > r->prior)
+        merge (l->r, l->r, r),  t = l;
+    else
+        merge (r->l, l, r->l),  t = r;
+    upd_cnt (t);
+}
+
+void split (pitem t, pitem & l, pitem & r, int key, int add = 0) {
+    if (!t)
+        return void( l = r = 0 );
+    push (t);
+    int cur_key = add + cnt(t->l);
+    if (key <= cur_key)
+        split (t->l, l, t->l, key, add),  r = t;
+    else
+        split (t->r, t->r, r, key, add + 1 + cnt(t->l)),  l = t;
+    upd_cnt (t);
+}
+
+ll query (pitem t, int key, int add = 0) {
+    if (!t)return 0;
+    push (t);
+    int cur_key = add + cnt(t->l);
+    if (key > cur_key)
+        return sm(t->l)+t->value+ query(t->r, key, add + 1 + cnt(t->l));
+    else
+        return query(t->l, key, add);
+}
+void reverse (pitem t, int l, int r) {
+    pitem t1, t2, t3;
+    split (t, t1, t2, l-1);
+    split (t2, t2, t3, r-l+1);
+    t2->rev ^= true;
+    merge (t, t1, t2);
+    merge (t, t, t3);
+}
+
+void output (pitem t) {
+    if (!t)  return;
+    push (t);
+    output (t->l);
+    cout<<t->value;
+    output (t->r);
+}
+
+void func(int index){
+    ll n,q;cin>>n>>q;
+    ll u;
+    cin>>u;
+    pitem root=new item(u);
+    for (int i = 1; i < n; ++i) {
+        cin>>u;
+        merge(root,root,new item(u));
+    }
+    while (q--){
+        ll t;cin>>t;
+        ll st,en;cin>>st>>en;
+        if(t==1){
+            reverse(root,st,en);
+        }else{
+            ll enn= query(root,en,0),stt= query(root,st-1,0);
+            cout<<enn-stt<<endl;
+        }
+    }
 }
