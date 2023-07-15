@@ -1,0 +1,597 @@
+//////////////////////////////////
+
+// cp Algo imp
+
+void sort_cyclic_shifts(string const& s,vector<int>&p) {
+    int n = s.size();
+    const int alphabet = 256;
+    vector<int>  c(n), cnt(max(alphabet, n), 0);
+    for (int i = 0; i < n; i++)
+        cnt[s[i]]++;
+    for (int i = 1; i < alphabet; i++)
+        cnt[i] += cnt[i-1];
+    for (int i = 0; i < n; i++)
+        p[--cnt[s[i]]] = i;
+    c[p[0]] = 0;
+    int classes = 1;
+    for (int i = 1; i < n; i++) {
+        if (s[p[i]] != s[p[i-1]])
+            classes++;
+        c[p[i]] = classes - 1;
+    }
+    vector<int> pn(n), cn(n);
+    for (int h = 0; (1 << h) < n; ++h) {
+        for (int i = 0; i < n; i++) {
+            pn[i] = p[i] - (1 << h);
+            if (pn[i] < 0)
+                pn[i] += n;
+        }
+        fill(cnt.begin(), cnt.begin() + classes, 0);
+        for (int i = 0; i < n; i++)
+            cnt[c[pn[i]]]++;
+        for (int i = 1; i < classes; i++)
+            cnt[i] += cnt[i-1];
+        for (int i = n-1; i >= 0; i--)
+            p[--cnt[c[pn[i]]]] = pn[i];
+        cn[p[0]] = 0;
+        classes = 1;
+        for (int i = 1; i < n; i++) {
+            pair<int, int> cur = {c[p[i]], c[(p[i] + (1 << h)) % n]};
+            pair<int, int> prev = {c[p[i-1]], c[(p[i-1] + (1 << h)) % n]};
+            if (cur != prev)
+                ++classes;
+            cn[p[i]] = classes - 1;
+        }
+        c.swap(cn);
+    }
+}
+
+vector<int> suffix_array_construction(string& s) {  // o(n log(n)^2)
+    s += "$";
+    vector<int> sorted_shifts=vector<int>(s.size());
+    sort_cyclic_shifts(s,sorted_shifts);
+    sorted_shifts.erase(sorted_shifts.begin());
+    return sorted_shifts;
+}
+
+////////////////////////////////////////////////
+
+
+// EDU imp 
+
+void count_sort(vector<int>&p,vector<int>&c){
+
+    int n=p.size();
+    vector<int>cnt(n);
+    for (auto x:c) {
+        cnt[x]++;
+    }
+    vector<int>p_new(n);
+    vector<int>pos(n);
+    pos[0]=0;
+    for (int i = 1; i < n; ++i) {
+        pos[i]=pos[i-1]+cnt[i-1];
+    }
+    for (auto x:p) {
+        int i=c[x];
+        p_new[pos[i]]=x;
+        pos[i]++;
+    }
+    p=p_new;
+}
+void func(int index){
+    string s;cin>>s;
+    s+="$";
+    ll n=s.size();
+    vector<int>p(n),c(n);
+    {
+        vector<pair<char, int>> a(n);
+        for (int i = 0; i < n; ++i) {
+            a[i] = {s[i], i};
+        }
+        sort(a.begin(), a.end());
+        for (int i = 0; i < n; ++i) {
+            p[i] = a[i].second;
+        }
+        c[p[0]] = 0;
+        for (int i = 1; i < n; ++i) {
+            if (a[i].first == a[i - 1].first) {
+                c[p[i]] = c[p[i - 1]];
+            } else {
+                c[p[i]] = c[p[i - 1]] + 1;
+            }
+        }
+    }
+    int k=0;
+    while ((1<<k)<n){
+        for (int i = 0; i < n; ++i) {
+            p[i]=(p[i]-(1<<k)+n)%n;
+        }
+        count_sort(p,c);
+        vector<int>c_new(n);
+        c_new[p[0]] = 0;
+        for (int i = 1; i < n; ++i) {
+            pair<int,int>prev={c[p[i-1]],c[(p[i-1]+(1<<k))%n]};
+            pair<int,int>now={c[p[i]],c[(p[i]+(1<<k))%n]};
+            if (now==prev) {
+                c_new[p[i]] = c_new[p[i - 1]];
+            } else {
+                c_new[p[i]] = c_new[p[i - 1]] + 1;
+            }
+        }
+        c=c_new;
+        k++;
+    }
+    for (int i = 0; i < n; ++i) {
+        cout<<p[i]<<" ";
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// check for occurence of some substrings
+
+void count_sort(vector<int>&p,vector<int>&c){
+
+    int n=p.size();
+    vector<int>cnt(n);
+    for (auto x:c) {
+        cnt[x]++;
+    }
+    vector<int>p_new(n);
+    vector<int>pos(n);
+    pos[0]=0;
+    for (int i = 1; i < n; ++i) {
+        pos[i]=pos[i-1]+cnt[i-1];
+    }
+    for (auto x:p) {
+        int i=c[x];
+        p_new[pos[i]]=x;
+        pos[i]++;
+    }
+    p=p_new;
+}
+void func(int index){
+    string s;cin>>s;
+    s+="$";
+    ll n=s.size();
+    vector<int>p(n),c(n);
+    {
+        vector<pair<char, int>> a(n);
+        for (int i = 0; i < n; ++i) {
+            a[i] = {s[i], i};
+        }
+        sort(a.begin(), a.end());
+        for (int i = 0; i < n; ++i) {
+            p[i] = a[i].second;
+        }
+        c[p[0]] = 0;
+        for (int i = 1; i < n; ++i) {
+            if (a[i].first == a[i - 1].first) {
+                c[p[i]] = c[p[i - 1]];
+            } else {
+                c[p[i]] = c[p[i - 1]] + 1;
+            }
+        }
+    }
+    int k=0;
+    while ((1<<k)<n){
+        for (int i = 0; i < n; ++i) {
+            p[i]=(p[i]-(1<<k)+n)%n;
+        }
+        count_sort(p,c);
+        vector<int>c_new(n);
+        c_new[p[0]] = 0;
+        for (int i = 1; i < n; ++i) {
+            pair<int,int>prev={c[p[i-1]],c[(p[i-1]+(1<<k))%n]};
+            pair<int,int>now={c[p[i]],c[(p[i]+(1<<k))%n]};
+            if (now==prev) {
+                c_new[p[i]] = c_new[p[i - 1]];
+            } else {
+                c_new[p[i]] = c_new[p[i - 1]] + 1;
+            }
+        }
+        c=c_new;
+        k++;
+    }
+    ll q;cin>>q;
+    for (int i = 0; i < q; ++i) {
+        string str;cin>>str;
+        ll st=0,en=n-1;
+        ll val=1;
+        while (st<=en){
+            int tr=0;
+            ll md=(st+en)/2;
+            ll idx=p[md];
+            for (int j = 0; j < str.size(); ++j) {
+                if(str[j]>s[idx+j]){
+                    tr=-1;
+                    break;
+                }
+                else if(str[j]<s[idx+j]){
+                    tr=1;
+                    break;
+                }
+            }
+            if(tr==0){
+                cout<<"YES\n";
+                val=0;
+                break;
+            }
+            if(tr==-1){
+                st=md+1;
+            }else en=md-1;
+        }
+        if(val){
+            cout<<"NO\n";
+        }
+    }
+}
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+// get the number of OCC
+
+
+
+void count_sort(vector<int>&p,vector<int>&c){
+
+    int n=p.size();
+    vector<int>cnt(n);
+    for (auto x:c) {
+        cnt[x]++;
+    }
+    vector<int>p_new(n);
+    vector<int>pos(n);
+    pos[0]=0;
+    for (int i = 1; i < n; ++i) {
+        pos[i]=pos[i-1]+cnt[i-1];
+    }
+    for (auto x:p) {
+        int i=c[x];
+        p_new[pos[i]]=x;
+        pos[i]++;
+    }
+    p=p_new;
+}
+void func(int index){
+    string s;cin>>s;
+    s+="$";
+    ll n=s.size();
+    vector<int>p(n),c(n);
+    {
+        vector<pair<char, int>> a(n);
+        for (int i = 0; i < n; ++i) {
+            a[i] = {s[i], i};
+        }
+        sort(a.begin(), a.end());
+        for (int i = 0; i < n; ++i) {
+            p[i] = a[i].second;
+        }
+        c[p[0]] = 0;
+        for (int i = 1; i < n; ++i) {
+            if (a[i].first == a[i - 1].first) {
+                c[p[i]] = c[p[i - 1]];
+            } else {
+                c[p[i]] = c[p[i - 1]] + 1;
+            }
+        }
+    }
+    int k=0;
+    while ((1<<k)<n){
+        for (int i = 0; i < n; ++i) {
+            p[i]=(p[i]-(1<<k)+n)%n;
+        }
+        count_sort(p,c);
+        vector<int>c_new(n);
+        c_new[p[0]] = 0;
+        for (int i = 1; i < n; ++i) {
+            pair<int,int>prev={c[p[i-1]],c[(p[i-1]+(1<<k))%n]};
+            pair<int,int>now={c[p[i]],c[(p[i]+(1<<k))%n]};
+            if (now==prev) {
+                c_new[p[i]] = c_new[p[i - 1]];
+            } else {
+                c_new[p[i]] = c_new[p[i - 1]] + 1;
+            }
+        }
+        c=c_new;
+        k++;
+    }
+    ll q;cin>>q;
+    for (int i = 0; i < q; ++i) {
+        string str;cin>>str;
+        ll st=0,en=n-1;
+        ll val=1;
+        while (st<=en){
+            int tr=0;
+            ll md=(st+en)/2;
+            ll idx=p[md];
+            for (int j = 0; j < str.size(); ++j) {
+                if(str[j]>s[idx+j]){
+                    tr=-1;
+                    break;
+                }
+                else if(str[j]<s[idx+j]){
+                    tr=1;
+                    break;
+                }
+            }
+            if(tr==0){
+                val=0;
+                break;
+            }
+            if(tr==-1){
+                st=md+1;
+            }else en=md-1;
+        }
+        if(val){
+            cout<<"0\n";
+        }else{
+            ll stVal=n-1,enVal=0;
+            {
+                ll st=0,en=n-1;
+                while (st<=en){
+                    int tr=0;
+                    ll md=(st+en)/2;
+                    ll idx=p[md];
+                    for (int j = 0; j < str.size(); ++j) {
+                        if(str[j]>s[idx+j]){
+                            tr=-1;
+                            break;
+                        }
+                        else if(str[j]<s[idx+j]){
+                            tr=1;
+                            break;
+                        }
+                    }
+                    if(tr==0){
+                        stVal=min(stVal,md);
+                    }
+                    if(tr==-1){
+                        st=md+1;
+                    }else en=md-1;
+                }
+            }
+            {
+                ll st=0,en=n-1;
+                while (st<=en){
+                    int tr=0;
+                    ll md=(st+en)/2;
+                    ll idx=p[md];
+                    for (int j = 0; j < str.size(); ++j) {
+                        if(str[j]>s[idx+j]){
+                            tr=-1;
+                            break;
+                        }
+                        else if(str[j]<s[idx+j]){
+                            tr=1;
+                            break;
+                        }
+                    }
+                    if(tr==0){
+                        enVal=max(enVal,md);
+                    }
+                    if(tr==-1||tr==0){
+                        st=md+1;
+                    }else en=md-1;
+                }
+            }
+            cout<<enVal-stVal+1<<'\n';
+        }
+    }
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// compare 2 substrings 
+vector<vector<int>>c(32);
+ll n;
+int compare(int i, int j, int l, int k) {// i ->>1st start ,j ->> 2nd start , l ->> length , k the previous power of 2 
+    pair<int, int> a = {c[k][i], c[k][(i+l-(1 << k))%n]};
+    pair<int, int> b = {c[k][j], c[k][(j+l-(1 << k))%n]};
+    return a == b ? 0 : a < b ? -1 : 1;
+}
+
+
+//Longest common prefix of two substrings with additional memory
+
+
+int lcp(int i, int j) {
+    int ans = 0;
+    for (int k = M; k >= 0; k--) {
+        if (c[k].size()==n&&c[k][i % n] == c[k][j % n]) {
+            ans += 1 << k;
+            i += 1 << k;
+            j += 1 << k;
+        }
+    }
+    return ans;
+}
+
+void count_sort(vector<int>&p,vector<int>&c){
+    int n=p.size();
+    vector<int>cnt(n);
+    for (auto x:c) {
+        cnt[x]++;
+    }
+    vector<int>p_new(n);
+    vector<int>pos(n);
+    pos[0]=0;
+    for (int i = 1; i < n; ++i) {
+        pos[i]=pos[i-1]+cnt[i-1];
+    }
+    for (auto x:p) {
+        int i=c[x];
+        p_new[pos[i]]=x;
+        pos[i]++;
+    }
+    p=p_new;
+}
+void func(int index){
+    string s;cin>>s;
+    s+="$";
+    n=s.size();
+    vector<int>p(n),cVec(n);
+    {
+        vector<pair<char, int>> a(n);
+        for (int i = 0; i < n; ++i) {
+            a[i] = {s[i], i};
+        }
+        sort(a.begin(), a.end());
+        for (int i = 0; i < n; ++i) {
+            p[i] = a[i].second;
+        }
+        cVec[p[0]] = 0;
+        for (int i = 1; i < n; ++i) {
+            if (a[i].first == a[i - 1].first) {
+                cVec[p[i]] = cVec[p[i - 1]];
+            } else {
+                cVec[p[i]] = cVec[p[i - 1]] + 1;
+            }
+        }
+    }
+    int k=0;
+    c[k]=cVec;
+    while ((1<<k)<n){
+        for (int i = 0; i < n; ++i) {
+            p[i]=(p[i]-(1<<k)+n)%n;
+        }
+        count_sort(p,cVec);
+        vector<int>c_new(n);
+        c_new[p[0]] = 0;
+        for (int i = 1; i < n; ++i) {
+            pair<int,int>prev={cVec[p[i-1]],cVec[(p[i-1]+(1<<k))%n]};
+            pair<int,int>now={cVec[p[i]],cVec[(p[i]+(1<<k))%n]};
+            if (now==prev) {
+                c_new[p[i]] = c_new[p[i - 1]];
+            } else {
+                c_new[p[i]] = c_new[p[i - 1]] + 1;
+            }
+        }
+        cVec=c_new;
+        k++;
+        c[k]=cVec;
+    }
+    for (int i = 0; i < n; ++i) {
+        cout<<p[i]<<" ";
+    }
+}
+
+
+////////////////////////////////////////////////////////////////////
+
+// get lcp in less memory don`t need to get c[][] 
+
+// lcp[i] --> lcp between p[i]&p[i+1]
+
+vector<int> lcp_construction(string& s, vector<int>& p) {
+    int n = s.size();
+    vector<int> rank(n, 0);
+    for (int i = 0; i < n; i++)
+        rank[p[i]] = i;
+
+    int k = 0;
+    vector<int> lcp(n-1, 0);
+    for (int i = 0; i < n; i++) {
+        if (rank[i] == n - 1) {
+            k = 0;
+            continue;
+        }
+        int j = p[rank[i] + 1];
+        while (i + k < n && j + k < n && s[i+k] == s[j+k])
+            k++;
+        lcp[rank[i]] = k;
+        if (k)
+            k--;
+    }
+    return lcp;
+}
+
+
+
+
+////////////////////////////////////////////////////////////////////
+
+
+
+// Number of different substrings	=	sum(n-p[i])-sum(lcp[i])-->form upper code
+						(n^2+n)/2 -sum(lcp[i])
+
+
+
+////////////////////////////////////////////////////////////////////
+
+
+
+// get the kth string from distinct substrings in string
+
+
+
+void func(int index){
+    string s;cin>>s;
+    ll len=s.size();
+    s+="$";
+    ll n=s.size();
+    vector<int>p(n),c(n);
+    {
+        vector<pair<char, int>> a(n);
+        for (int i = 0; i < n; ++i) {
+            a[i] = {s[i], i};
+        }
+        sort(a.begin(), a.end());
+        for (int i = 0; i < n; ++i) {
+            p[i] = a[i].second;
+        }
+        c[p[0]] = 0;
+        for (int i = 1; i < n; ++i) {
+            if (a[i].first == a[i - 1].first) {
+                c[p[i]] = c[p[i - 1]];
+            } else {
+                c[p[i]] = c[p[i - 1]] + 1;
+            }
+        }
+    }
+    int k=0;
+    while ((1<<k)<n){
+        for (int i = 0; i < n; ++i) {
+            p[i]=(p[i]-(1<<k)+n)%n;
+        }
+        count_sort(p,c);
+        vector<int>c_new(n);
+        c_new[p[0]] = 0;
+        for (int i = 1; i < n; ++i) {
+            pair<int,int>prev={c[p[i-1]],c[(p[i-1]+(1<<k))%n]};
+            pair<int,int>now={c[p[i]],c[(p[i]+(1<<k))%n]};
+            if (now==prev) {
+                c_new[p[i]] = c_new[p[i - 1]];
+            } else {
+                c_new[p[i]] = c_new[p[i - 1]] + 1;
+            }
+        }
+        c=c_new;
+        k++;
+    }
+    ll rank;cin>>rank;
+    auto lcp= lcp_construction(s,p);
+    ll total=0;
+    for (int i = 1; i < n; ++i) {
+        ll len2=len-p[i]-lcp[i-1];
+        if(total+len2>=rank){
+            ll go=(rank-total);
+            string sR="";
+            for (int j = 0; j < lcp[i-1]; ++j) {
+                sR+=s[p[i]+j];
+            }
+            for (int j = 0; j < go; ++j) {
+                sR+=s[p[i]+j+lcp[i-1]];
+            }
+            cout<<sR<<endl;
+            return;
+        }
+        total+=len2;
+    }
+}

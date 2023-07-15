@@ -1,0 +1,276 @@
+//////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+const int mx=26;//len of Alpha
+struct node
+{
+    node * ch[mx];
+    node * fail;
+    vector<int> pat_idx;
+    node()
+    {
+        memset(ch,0,sizeof ch);
+        fail = NULL;
+    }
+}* root;
+
+void init()
+{
+    root = new node();
+}
+
+void insert(string &s , int idx)// insert strings from  set
+{
+    node * cur = root;
+
+    for(int i=0; i<s.size(); i++)
+    {
+        int c = s[i]-'a';
+        if (cur->ch[c] == NULL) cur->ch[c] = new node();
+        cur = cur->ch[c];
+    }
+    cur->pat_idx.push_back(idx);
+}
+
+node* get(node *k , int c)
+{
+    while(k->ch[c] == NULL)
+        k = k->fail;
+    k = k->ch[c];
+    return k;
+}
+
+void buildAho()// o(mx*(sum[size of si]));
+{
+    queue <node*> q;
+    for ( int i = 0  ; i < mx; i++)
+    {
+        if( root->ch[i])
+            q.push(root->ch[i]);
+        else
+            root->ch[i] = new node();
+        root->ch[i]->fail = root;
+    }
+    while(!q.empty())
+    {
+        node* cur = q.front();
+        q.pop();
+        for ( int i = 0 ; i < mx ; i++)
+        {
+            if(cur->ch[i])
+            {
+                node*fail = cur->fail;
+
+                fail = get(fail,i);
+
+                cur->ch[i]->fail = fail;
+
+                q.push(cur->ch[i]);
+
+                for ( auto &j : fail->pat_idx)
+                    cur->ch[i]->pat_idx.push_back(j);
+            }
+        }
+    }
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+// to get the number of occ for each si
+
+
+void func(int index){
+    string str;cin>>str;
+    ll k;cin>>k;
+    init();
+    vector<int>dp(k);
+    for (int i = 0; i < k; ++i) {
+        string s;cin>>s;
+        insert(s,i);
+    }
+    buildAho();
+    auto cur=root;
+    for (int i = 0; i < str.size(); ++i) {
+        cur=get(cur,str[i]-'a');
+        for (auto item:cur->pat_idx) {
+            dp[item]++;
+        }
+    }
+    for (auto item:dp) {
+        cout<<item<<'\n';
+    }
+}
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+// Finding the lexicographically smallest string of a given length that doesn't match any given strings
+
+const int mx=26;//len of Alpha
+struct node
+{
+    node * ch[mx];
+    node * fail;
+    bool outPut;
+    bool can[mx];
+    node()
+    {
+        ::memset(can,1,sizeof can);
+        memset(ch,0,sizeof ch);
+        fail = NULL;
+        outPut=0;
+    }
+
+}* root;
+
+void init()
+{
+    root = new node();
+}
+
+void insert(string &s , int idx)// insert strings from  set
+{
+    node * cur = root;
+
+    for(int i=0; i<s.size(); i++)
+    {
+        int c = s[i]-'a';
+        if (cur->ch[c] == NULL) cur->ch[c] = new node();
+        if(i==s.size()-1){
+            cur->can[c]=0;
+        }
+        cur = cur->ch[c];
+    }
+    cur->outPut=1;
+}
+
+node* get(node *k , int c)
+{
+    while(k->ch[c] == NULL)
+        k = k->fail;
+    k = k->ch[c];
+    return k;
+}
+
+void buildAho()// o(mx*(sum[size of si]));
+{
+    queue <node*> q;
+    for ( int i = 0  ; i < mx; i++)
+    {
+        if( root->ch[i])
+            q.push(root->ch[i]);
+        else
+            root->ch[i] = new node();
+        root->ch[i]->fail = root;
+    }
+    while(!q.empty())
+    {
+        node* cur = q.front();
+        q.pop();
+        for ( int i = 0 ; i < mx ; i++)
+        {
+            if(cur->ch[i])
+            {
+                node*fail = cur->fail;
+                fail = get(fail,i);
+                cur->ch[i]->fail = fail;
+                q.push(cur->ch[i]);
+                if(fail->outPut)
+                    cur->can[i]=0;
+            }
+        }
+    }
+}
+string res="";
+void dfs(node* c,int len){
+    if(len==0)return;
+    for (int i = 0; i < mx; ++i) {
+        if(c->can[i]){
+            c= get(c,i);
+            res+=(char) 'a'+i;
+            dfs(c,len-1);
+            return;
+        }
+    }
+}
+void func(int index){
+    ll len;cin>>len; // length of all strings
+    ll k;cin>>k;
+    init();
+    ll counter=0;
+    for (int i = 0; i < k; ++i) {
+        string s;cin>>s;
+        insert(s,i);
+    }
+    buildAho();
+    auto cur=root;
+    dfs(cur,len);
+    cout<<res<<endl;
+}
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+// Finding the shortest string containing all given strings
+
+
+
+
+ll k;
+struct edge{
+    node* node;
+    int mask,len;
+};
+ll bfs(){
+    auto cur=root;
+    queue<edge>q;
+    q.push({cur,0,0});
+    map<pair<node*,int>,int>vis;
+
+    while (q.size()){
+        auto node=q.front().node;
+        ll mask=q.front().mask,len=q.front().len;
+        q.pop();
+        if(__builtin_popcount(mask)==k){
+            return len;
+        }
+        if(vis[{node,mask}])continue;
+        for (int i = 0; i < mx; ++i) {
+            auto c= get(node,i);
+            auto maskT=mask;
+            for(auto item:c->pat_idx){
+                maskT=maskT|(1<<item);
+            }
+            q.push({c,maskT,len+1});
+        }
+    }
+}
+void func(int index){
+    cin>>k;
+    init();
+    for (int i = 0; i < k; ++i) {
+        string s;cin>>s;
+        insert(s,i);
+    }
+    buildAho();
+    cout<<bfs();	// get the length 
+			// to get the string its self we need to run BUILD function
+			
+} 
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+// Finding the shortest string containing all given strings
+
+
