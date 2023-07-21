@@ -220,8 +220,7 @@ void func(int index){
 
 
 // Finding the shortest string containing all given strings
-
-
+// ?? at time that it takes
 
 
 ll k;
@@ -229,6 +228,8 @@ struct edge{
     node* node;
     int mask,len;
 };
+
+
 ll bfs(){
     auto cur=root;
     queue<edge>q;
@@ -244,7 +245,8 @@ ll bfs(){
         }
         if(vis[{node,mask}])continue;
         for (int i = 0; i < mx; ++i) {
-            auto c= get(node,i);
+            auto temp=node;
+            auto c= get(temp,i);
             auto maskT=mask;
             for(auto item:c->pat_idx){
                 maskT=maskT|(1<<item);
@@ -271,6 +273,42 @@ void func(int index){
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-// Finding the shortest string containing all given strings
+// Finding the lexicographically smallest string of length  l and k strings from set
+
+
+string res="";
+bool dfs(node* c,int len,int k){
+    if(len==0){
+        return k==0;// we can change the constrain here due to the problem
+    }
+    for (int i = 0; i < mx; ++i) {
+        auto temp=c;
+        temp= get(temp,i);
+        int counter=0;
+        for (auto item:temp->pat_idx) {
+            counter++;
+        }
+        if(dfs(temp,len-1,k-counter)){
+            res+='a'+i;
+            return true;
+        }
+    }
+    return 0;
+}
+void func(int index){
+    ll len;cin>>len; // length of all strings
+    ll k;cin>>k;
+    init();
+    ll counter=0;
+    for (int i = 0; i < k; ++i) {
+        string s;cin>>s;
+        insert(s,i);
+    }
+    buildAho();
+    auto cur=root;
+    dfs(cur,len,k);
+    reverse(res.begin(),res.end());
+    cout<<res<<endl;
+}
 
 

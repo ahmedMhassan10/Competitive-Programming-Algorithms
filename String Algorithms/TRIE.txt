@@ -38,3 +38,91 @@ void func(int index){
     root=new Node();
 
 }
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+// Maximum Xor Subarray
+
+
+
+struct Node{
+    Node *nxt[2];
+    int cnt;
+    Node()
+    {
+        cnt = 0;
+        memset(nxt,0,sizeof nxt);
+    }
+}*root;
+
+void insert(  int num)
+{
+    Node *cur = root;
+    for( int i = 30 ; i >= 0;i--)
+    {
+        int tr=(bool)((1<<i)&num);
+        if(!cur->nxt[tr])
+            cur->nxt[tr] = new Node();
+        cur = cur->nxt[tr];
+    }
+}
+bool get( int num){
+    Node *cur = root;
+    for( int i = 30 ; i >= 0;i--)
+    {
+        int tr=(bool)((1<<i)&num);
+
+        if(!cur->nxt[tr]){
+            return false;
+        }
+        cur = cur->nxt[tr];
+    }
+    return true;
+}
+int search( int num){
+    Node *cur = root;
+    ll res=0;
+    for( int i = 30 ; i >= 0;i--)
+    {
+        int tr=(1-(bool)((1<<i)&num));
+        if(cur->nxt[tr]){
+            cur = cur->nxt[tr];
+            if(tr){
+                res+=(1<<i);
+            }
+        }else if(cur->nxt[1-tr]) {
+            cur = cur->nxt[1 - tr];
+            if(tr==0){
+                res+=(1<<i);
+            }
+        }else{
+            return res;
+        }
+    }
+    return res;
+}
+void func(int index){
+    root=new Node();
+    ll n;cin>>n;
+    vector<int>vec(n);
+    vector<int>prif(n);
+    ll res=0;
+    for (int i = 0; i < n; ++i) {
+        cin>>vec[i];
+        prif[i]=vec[i];
+        if(i)
+        {
+            prif[i]^=prif[i-1];
+            ll val= search(prif[i]);
+            res=max({res,val^prif[i],prif[i]});
+        }else{
+            res=max(res,prif[i]);
+        }
+        insert(prif[i]);
+    }
+    cout<<res;
+}
