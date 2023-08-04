@@ -65,10 +65,10 @@ ll get_value(ll st, ll en, vi &prifx, vi &pw ,vi &inv) {
 
 --->For pair
 const ll OO = 1e9, mod = 1e9 + 7,mod2=1e9+9, N = 1e3+5;
-vi  pw(N);
-vi inv(N);
-vi  pw2(N);
-vi inv2(N);
+vector<int>  pw(N);
+vector<int> inv(N);
+vector<int>  pw2(N);
+vector<int> inv2(N);
 ll add(ll a, ll b,ll mod) {
     return ((a % mod + b % mod) + mod) % mod;
 }
@@ -82,7 +82,7 @@ ll minu(ll a, ll b,ll mod) {
 }
 
 ll fastp(ll a, ll b,ll mod) {
-    if (b == 0)return ll(1);
+    if (b == 0)return (1);
     ll temp = fastp(a, b / 2,mod);
     ll total = mul(temp, temp,mod);
     if (b % 2 == 1) {
@@ -105,7 +105,7 @@ void pre() {
         inv2[i] = mul(inv2[i - 1], mul_inv2,mod2);
     }
 }
-vll prifx(N),prifx2(N);
+vector<int> prifx(N),prifx2(N);
 void make_hash(string &x) {
     for (int i = 0; i < x.size(); ++i) {
         ll ind = x[i] - 'a' + 1;
@@ -122,10 +122,9 @@ pair<ll,ll> get_pair_value(ll st, ll en) {
         return {prifx[en],prifx2[en]};
     return {mul(minu(prifx[en],prifx[st-1],mod),inv[st],mod),mul(minu(prifx2[en],prifx2[st-1],mod2),inv2[st],mod2)};
 }
-ll get_int_value(ll st, ll en, vi &prifx, vi &pw ,vi &inv,ll mod) {
+ll get_int_value(ll st, ll en, vector<int> &prifx, vector<int> &pw ,vector<int> &inv,ll mod) {
     if(st==0)
         return prifx[en];
     return mul(minu(prifx[en],prifx[st-1],mod),inv[st],mod);
 }
-
 ---->to check palindrome get hash then reverse string and get hash if two hashes are equal the string is palindrome
