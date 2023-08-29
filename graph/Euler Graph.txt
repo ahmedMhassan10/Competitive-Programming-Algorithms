@@ -46,7 +46,9 @@ void func(int index)
         cout << ans[i] << ' ';
     cout << '\n';
 }
+
 \\\\\ Euler circuit for directed graph
+
 vector<int> in(N), out(N);
 vector < int > g[N];
 vector < int > ans;

@@ -1,0 +1,640 @@
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// Max Flow === Min Cut Problem
+
+
+// Ford-Fulkerson method
+
+// O(v*E*E)
+
+
+int n;
+vector<vector<int>> capacity;
+vector<vector<int>> adj;
+
+int bfs(int s, int t, vector<int>& parent) {
+    fill(parent.begin(), parent.end(), -1);
+    parent[s] = -2;
+    queue<pair<int, int>> q;
+    q.push({s, INF});
+
+    while (!q.empty()) {
+        int cur = q.front().first;
+        int flow = q.front().second;
+        q.pop();
+
+        for (int next : adj[cur]) {
+            if (parent[next] == -1 && capacity[cur][next]) {
+                parent[next] = cur;
+                int new_flow = min(flow, capacity[cur][next]);
+                if (next == t)
+                    return new_flow;
+                q.push({next, new_flow});
+            }
+        }
+    }
+
+    return 0;
+}
+
+int maxflow(int s, int t) {
+    int flow = 0;
+    vector<int> parent(n);
+    int new_flow;
+
+    while (new_flow = bfs(s, t, parent)) {
+        flow += new_flow;
+        int cur = t;
+        while (cur != s) {
+            int prev = parent[cur];
+            capacity[prev][cur] -= new_flow;
+            capacity[cur][prev] += new_flow;
+            cur = prev;
+        }
+    }
+
+    return flow;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+// Dinc
+// O(V*V*E)
+
+
+
+struct FlowEdge {
+    int v, u;// from ,to
+    long long cap, flow = 0;
+    FlowEdge(int v, int u, long long cap) : v(v), u(u), cap(cap) {}
+};
+
+struct Dinic {
+    const long long flow_inf = 1e18;
+    vector<FlowEdge> edges;
+    vector<vector<int>> adj,path;
+    int n, m = 0,pathIdx=0,save=0;
+    int s, t;
+    vector<int> level, ptr,vis,curPath;
+    queue<int> q;
+
+    Dinic(int n, int s, int t) : n(n), s(s), t(t) {
+        adj.resize(n);
+        level.resize(n);
+        ptr.resize(n);
+        vis.resize(n);
+
+    }
+
+    void add_edge(int v, int u, long long cap) {
+        edges.emplace_back(v, u, cap);
+        edges.emplace_back(u, v, 0);
+        adj[v].push_back(m);
+        adj[u].push_back(m + 1);
+        m += 2;
+    }
+
+    bool bfs() {
+        while (!q.empty()) {
+            int v = q.front();
+            q.pop();
+            for (int id : adj[v]) {
+                if (edges[id].cap - edges[id].flow < 1)
+                    continue;
+                if (level[edges[id].u] != -1)
+                    continue;
+                level[edges[id].u] = level[v] + 1;
+                q.push(edges[id].u);
+            }
+        }
+        return level[t] != -1;
+    }
+
+    long long dfs(int v, long long pushed) {
+        if (pushed == 0)
+            return 0;
+        if (v == t)
+            return pushed;
+        for (int& cid = ptr[v]; cid < (int)adj[v].size(); cid++) {
+            int id = adj[v][cid];
+            int u = edges[id].u;
+            if (level[v] + 1 != level[u] || edges[id].cap - edges[id].flow < 1)
+                continue;
+            long long tr = dfs(u, min(pushed, edges[id].cap - edges[id].flow));
+            if (tr == 0)
+                continue;
+            edges[id].flow += tr;
+            edges[id ^ 1].flow -= tr;
+            return tr;
+        }
+        return 0;
+    }
+
+    long long flow() {
+        long long f = 0;
+        while (true) {
+            fill(level.begin(), level.end(), -1);
+            level[s] = 0;
+            q.push(s);
+            if (!bfs())
+                break;
+            fill(ptr.begin(), ptr.end(), 0);
+            while (long long pushed = dfs(s, flow_inf)) {
+                f += pushed;
+            }
+        }
+        return f;
+    }
+    void mark(){
+        for(int i=1;i<n;i++){
+            if(level[i]>=0)
+                vis[i]=1;
+        }
+    }
+    vector<pair<int,int>> getCuts(){
+        mark();
+        vector<pair<int,int>>res;
+        for (int i = 1;i < n; ++i) {
+            if(vis[i]==0)continue;
+            for (auto item:adj[i]) {
+                if(edges[item].u==i)
+                    continue;
+                auto next=edges[item].u;
+                if(vis[next]==0){
+                    res.push_back({i,next});
+                }
+            }
+        }
+        return res;
+    }
+    int handlePath(int node,int par,int val){
+        if(node==s){
+            save=0;
+        }
+        if(node==t){
+            path.push_back(vector<int>());
+            path[pathIdx].push_back(s);
+            for (int i = 0; i < curPath.size(); ++i) {
+                path[pathIdx].push_back(curPath[i]);
+            }
+            pathIdx++;
+            save=1;
+            return val;
+        }
+        for (auto item:adj[node]) {
+            if(item%2)continue;
+            auto from =edges[item].v,to=edges[item].u;
+            if(to==par)continue;
+            if(edges[item].flow){
+                curPath.push_back(to);
+                ll val2= handlePath(to,from,min(val,edges[item].flow));
+                curPath.pop_back();
+                if(save){
+                    edges[item].flow-=val2;
+                    if(node==s)
+                        save=0;
+                    else
+                        return val2;
+                }
+            }
+        }
+        return 0;
+    }
+};
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+// to get Maximum edge Disjoint path (NO common Edges)
+
+
+// put every edge with cap 1 then run dinc
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+// if there is cap on vertex then split vertex to 2 vertex with edge between them
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+// Maximum independent path (NO common edges or vertex)
+
+
+// put every edge with cap 1 
+
+
+// then put cap on vertex and split it
+
+// then run dinic
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// multi source - multi sink
+
+
+// add super source with edges (cap==OO) to all sources 
+
+
+
+// add super sink with edges (cap==OO) to all sinks 
+
+
+// then run Dink
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+// Maximum bipartite matching 
+
+// if i have to match men to women then use the idea of multi sorce multi sink to get the maximum matches
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Min Path Coverage in DAG
+
+// Minumum number of pathes in dag to cover all vertexes (konig throrem) use each edge at most once
+
+1) build adj mat 
+
+2) you have 2N nodes row as group and columns as group 
+
+3) then get new graph with 2N nodes and get maximum matching=M 
+
+4) # of pathes = N-M 
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// find min cut edges itSelf
+
+// get the nearest edges for source that are zeroes
+
+// run flow to get min cut 
+
+// run dfs from start each edge between marked and un marked nodes is min cut 
+
+////////////////////////////////////////////////////////
+
+https://ali-ibrahim137.github.io/competitive/programming/2020/01/02/maximum-independent-set-in-bipartite-graphs.html
+// Only in bipartite graph
+
+// independent set is set of verteses that no pair of them has direct edge 
+
+
+// maximal independent set (can`t add any other node) many sets can  be found using BFS
+
+
+// Maximum independent sets (maximize the number of verteces) only one set
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Flows with demands
+
+
+// Finding an arbitrary flow
+
+// each edge has d(e) ---> minimum capacity (default=0)
+
+// add super source s` connect it to all nodes and add super  sink t` connect it to all nodes
+
+// add edge from t --> s 
+
+// then recalculate all capacities
+
+// c`(s`,v)= sum(d(u,v)) for all edges v is distance
+
+// c`(v,t`)= sum(d(v,u)) for all edges v is source
+ 
+// c`(u,v) = c(u,v)-d(u,v) 
+
+// c`(t,s) = OO
+
+
+
+// Minimal flow
+
+// to get it we will decrease the c`(t,s) by any value to limit it 
+
+// then we will use binary search to do that while it return flow we will decrease c`(t,s) else go up
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+// Minimum-cost flow  (Successive shortest path algorithm)
+
+// O(F*n*m)
+
+struct Edge
+{
+    int from, to, capacity, cost;
+};
+
+vector<vector<int>> adj, cost, capacity;
+
+
+void shortest_paths(int n, int v0, vector<int>& d, vector<int>& p) {
+    d.assign(n, OO);
+    d[v0] = 0;
+    vector<bool> inq(n, false);
+    queue<int> q;
+    q.push(v0);
+    p.assign(n, -1);
+
+    while (!q.empty()) {
+        int u = q.front();
+        q.pop();
+        inq[u] = false;
+        for (int v : adj[u]) {
+            if (capacity[u][v] > 0 && d[v] > d[u] + cost[u][v]) {
+                d[v] = d[u] + cost[u][v];
+                p[v] = u;
+                if (!inq[v]) {
+                    inq[v] = true;
+                    q.push(v);
+                }
+            }
+        }
+    }
+}
+
+int min_cost_flow(int n, vector<Edge> edges, int K, int s, int t) {
+    adj.assign(n, vector<int>());
+    cost.assign(n, vector<int>(n, 0));
+    capacity.assign(n, vector<int>(n, 0));
+    for (Edge e : edges) {
+        adj[e.from].push_back(e.to);
+        adj[e.to].push_back(e.from);
+        cost[e.from][e.to] = e.cost;
+        cost[e.to][e.from] = -e.cost;
+        capacity[e.from][e.to] = e.capacity;
+    }
+
+    int flow = 0;
+    int cost = 0;
+    vector<int> d, p;
+    while (flow < K) {
+        shortest_paths(n, s, d, p);
+        if (d[t] == OO)
+            break;
+
+        // find max flow on that path
+        int f = K - flow;
+        int cur = t;
+        while (cur != s) {
+            f = min(f, capacity[p[cur]][cur]);
+            cur = p[cur];
+        }
+
+        // apply flow
+        flow += f;
+        cost += f * d[t];
+        cur = t;
+        while (cur != s) {
+            capacity[p[cur]][cur] -= f;
+            capacity[cur][p[cur]] += f;
+            cur = p[cur];
+        }
+    }
+
+    if (flow < K)
+        return -1;
+    else
+        return cost;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Minimum-cost flow  (Successive shortest path algorithm) for dublicated edges
+
+
+
+struct Edge
+{
+    int from, to, capacity, cost;
+};
+struct rank2{
+    int val, idx;
+};
+vector<vector<rank2>>adj, cost, capacity;
+ 
+ 
+void shortest_paths(int n, int v0, vector<int>& d, vector<pair<int,int>>& p) {
+    d.assign(n, OO);
+    d[v0] = 0;
+    vector<bool> inq(n, false);
+    queue<int> q;
+    q.push(v0);
+    p.assign(n, {-1,-1});
+ 
+    while (!q.empty()) {
+        int u = q.front();
+        q.pop();
+        inq[u] = false;
+        for (int v=0 ;v< adj[u].size();v++) {
+            auto ch=adj[u][v].val;
+            if (capacity[u][v].val > 0 && d[ch] > d[u] + cost[u][v].val) {
+                d[ch] = d[u] + cost[u][v].val;
+                p[ch] = {v,adj[u][v].idx};
+                if (!inq[ch]) {
+                    inq[ch] = true;
+                    q.push(ch);
+                }
+            }
+        }
+    }
+}
+ 
+int min_cost_flow(int n, vector<Edge> edges, int K, int s, int t) {
+    adj.assign(n, vector<rank2>());
+    cost.assign(n, vector<rank2>());
+    capacity.assign(n, vector<rank2>());
+    ll idx=0;
+    for (Edge e : edges) {
+        adj[e.from].push_back({e.to,idx});
+        cost[e.from].push_back( {e.cost,idx});
+        capacity[e.from].push_back({e.capacity,idx});
+        idx++;
+    }
+    int flow = 0;
+    int cost = 0;
+    vector<int> d;
+    vector<pair<int,int>>p;
+    while (flow < K) {
+        shortest_paths(n, s, d, p);
+        if (d[t] == OO)
+            break;
+        // find max flow on that path
+        int f = K - flow;
+        int cur = t;
+        while (cur != s) {
+ 
+            auto item=edges[p[cur].second];
+            auto item1=p[cur];
+            auto parent=edges[p[cur].second].from;
+            auto temp=capacity[parent][p[cur].first];
+            f = min(f, capacity[parent][p[cur].first].val);
+            cur = parent;
+        }
+        // apply flow
+        flow += f;
+        cost += f * d[t];
+        cur = t;
+        while (cur != s) {
+            auto parent=edges[p[cur].second].from;
+            capacity[parent][p[cur].first].val -= f;
+            edges[p[cur].second].capacity -= f;
+            edges[p[cur].second+1].capacity += f;
+ 
+            cur = parent;
+        }
+    }
+    if (flow < K)
+        return -1;
+    else
+        return cost;
+}
+void func(int index) {
+    ll n,m,k;cin>>n>>m>>k;
+    vector<Edge>edges;
+    for (int i = 0; i < m; ++i) {
+        ll u,v,f,c;cin>>u>>v>>f>>c;
+        edges.push_back({u,v,f,c});
+        edges.push_back({v,u,0,-c});
+    }
+    cout<<min_cost_flow(n*2+10,edges,k,1,n);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+// Solving assignment problem using min-cost-flow
+
+// do as we do matching problem then solve it as Minimum-cost flow problem 
+
+//or we can use hangarian 
+
+
+const int INF = 1000 * 1000 * 1000;
+
+vector<int> assignment(vector<vector<int>>& a) {
+    int n = a.size();
+    int m = n * 2 + 2;
+    vector<vector<int>> f(m, vector<int>(m));
+    int s = m - 2, t = m - 1;
+    int cost = 0;
+    while (true) {
+        vector<int> dist(m, INF);
+        vector<int> p(m);
+        vector<bool> inq(m, false);
+        queue<int> q;
+        dist[s] = 0;
+        p[s] = -1;
+        q.push(s);
+        while (!q.empty()) {
+            int v = q.front();
+            q.pop();
+            inq[v] = false;
+            if (v == s) {
+                for (int i = 0; i < n; ++i) {
+                    if (f[s][i] == 0) {
+                        dist[i] = 0;
+                        p[i] = s;
+                        inq[i] = true;
+                        q.push(i);
+                    }
+                }
+            } else {
+                if (v < n) {
+                    for (int j = n; j < n + n; ++j) {
+                        if (f[v][j] < 1 && dist[j] > dist[v] + a[v][j - n]) {
+                            dist[j] = dist[v] + a[v][j - n];
+                            p[j] = v;
+                            if (!inq[j]) {
+                                q.push(j);
+                                inq[j] = true;
+                            }
+                        }
+                    }
+                } else {
+                    for (int j = 0; j < n; ++j) {
+                        if (f[v][j] < 0 && dist[j] > dist[v] - a[j][v - n]) {
+                            dist[j] = dist[v] - a[j][v - n];
+                            p[j] = v;
+                            if (!inq[j]) {
+                                q.push(j);
+                                inq[j] = true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        int curcost = INF;
+        for (int i = n; i < n + n; ++i) {
+            if (f[i][t] == 0 && dist[i] < curcost) {
+                curcost = dist[i];
+                p[t] = i;
+            }
+        }
+        if (curcost == INF)
+            break;
+        cost += curcost;
+        for (int cur = t; cur != -1; cur = p[cur]) {
+            int prev = p[cur];
+            if (prev != -1)
+                f[cur][prev] = -(f[prev][cur] = 1);
+        }
+    }
+
+    vector<int> answer(n);
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < n; ++j) {
+            if (f[i][j + n] == 1)
+                answer[i] = j;
+        }
+    }
+    return answer;
+}
+
+void func(int index) {
+    ll n;cin>>n;
+    vector<vector<int>>a(n,vector<int>(n));
+    for (int u = 0; u < n ; ++u) {
+        for (int v = 0; v < n ; ++v) {
+            cin>>a[u][v];
+        }
+    }
+    auto item= assignment(a);
+    ll res=0;
+    for (int i = 0; i < item.size(); ++i) {
+        res+=a[i][item[i]];
+    }
+    cout<<res<<endl;
+    for (int i = 0; i < item.size(); ++i) {
+        cout<<i+1<<" "<<item[i]+1<<endl;
+    }
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+

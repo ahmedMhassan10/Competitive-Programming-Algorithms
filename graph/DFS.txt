@@ -29,6 +29,7 @@ int dfs(int s, int p, vector<int> adj[]) {
     if (!mp.count(v)) mp[v] = idx++;
     return mp[v];
 }
+
 ////////////////////////////
 some hashing problem alsoooo  https://codeforces.com/contest/1800/submission/195841803
 vll lvl(N),sz(N);
@@ -232,7 +233,9 @@ void dfs( int node,int par)
     if(cycle==0)st.pop();
 }
 ////////////////////////////////////////
+
 // get the minimum #of swaps to make array sorted
+
 vector<vector < int > >adj(N);
 vector<bool>vis(N,0);
 map<ll,ll>component;

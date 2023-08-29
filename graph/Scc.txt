@@ -308,15 +308,20 @@ void func(int index){
 //////////////////////////////////////////////////////////////////////
 
 
-Bridgessss
+//   Bridgessss
 
-int adjMat[N][N];
-int low[N], dfn[N], num, n;
+// if the graph was directed then just solve it using scc
+
+// the next code handle undirected 
+
+
+vector<vector<int>> adjMat(N);
+int low[N], dfn[N], num, n,m;
 vector<pair<int, int> > bridges;
 void art_bridges(int i, int p) {
     low[i] = dfn[i] = num++;
-    for (int j = 0; j < n; ++j)
-        if (adjMat[i][j] && j != p) {
+    for (auto j : adjMat[i])
+        if (j != p) {
             if (dfn[j] == 0) {
                 art_bridges(j, i);
                 low[i] = min(low[i], low[j]);
@@ -327,174 +332,137 @@ void art_bridges(int i, int p) {
         }
 }
 void run_art_bridges() {
-    fo(i, n)
+    for(int i=0;i< n;i++)
         low[i] = -1, dfn[i] = 0;
     bridges.clear();
 
-    fo(i, n)
-    if (!dfn[i])
-        art_bridges(i, -1);
-    sort(all(bridges));
+    for(int i=0;i< n;i++)
+        if (!dfn[i])
+            art_bridges(i, -1);
+    sort(bridges.begin(),bridges.end());
 }
 
-int main() {
-#ifndef ONLINE_JUDGE
-	freopen("c.in", "rt", stdin);
-#endif
-
-	int to, cnt, from;
-	char ch;
-
-	while (cin >> n) {
-
-		lp(i, n) lp(j, n)
-			adjMat[i][j] = 0;
-
-		lp(i, n) {
-			cin >> from >> ch >> cnt >> ch;
-			lp(j, cnt) {
-				cin >> to; //0-based
-				adjMat[from][to] = 1;
-			}
-		}
-
-		run_art_bridges();
-
-		cout << bridges.size() << " critical links\n";
-		rep(i, bridges)
-			cout << bridges[i].first << " - " << bridges[i].second << "\n";
-
-		cin >> ws;
-		cout << "\n";
-
-	}
-	return 0;
+void func(int index){
+    num=1;
+    cin>>n>>m;
+    for (int i = 0; i < m; ++i) {
+        ll u,v;cin>>u>>v;
+        u--,v--;
+        adjMat[u].push_back(v);
+        adjMat[v].push_back(u);
+    }
+    run_art_bridges();
+    cout<<bridges.size()<<endl;
+    for (auto item:bridges){
+        cout<<item.first+1<<' '<<item.second+1<<endl;
+    }
 }
+
+
 /////////////////////////////////////////////////////////////////////
 
 
 Articilation Points
 
 
-const int MAX		  = 10000;
 const int NOT_VISITED = -1;
 
-int dfn[MAX], low[MAX];
-bool visited[MAX], root;
-set<int> artpoints;		//For removing arts if repetation
+int dfn[N], low[N];
+bool visited[N], root;
+set<int> artpoints;		    //For removing arts if repetation
 vector< vector<int> > graph;
 
-stack< pair<int, int> > component;	//pair<int, int> is edge[u--v]
+//if we want to print the BI Connected  components
+
+//stack< pair<int, int> > component;	//pair<int, int> is edge[u--v]
 
 int num;
 
 int min(int a, int b)
 {
-	return (a<b)?a:b;
+    return (a<b)?a:b;
 }
 
 void init(int n)
 {
-	num = 0;
-	artpoints.clear();
-	graph.clear();
-	graph.resize(n);
 
-	int i;
-	for(i=0;i<n;i++)
-	{
-		visited[i] = false;
-		dfn[i] = low[i] = NOT_VISITED;
-	}	
+    num = 0;
+    root=0;
+    artpoints.clear();
+    graph.clear();
+    graph.resize(n);
+    int i;
+    for(i=0;i<n;i++)
+    {
+        visited[i] = false;
+        dfn[i] = low[i] = NOT_VISITED;
+    }
+
 }
 
 void bicon(int u, int v)	//O(n+e)
 {
-	int i, w;
-	pair<int, int> edge;
-	dfn[u] = low[u] = num++;
+    int i, w;
+    pair<int, int> edge;
+    dfn[u] = low[u] = num++;
 
-	for(i=0;i<graph[u].size();i++)
-	{
-		w = graph[u][i];
-		if(v!=w && dfn[w]<dfn[u])
-			component.push( make_pair(u, w));
+    for(i=0;i<graph[u].size();i++)
+    {
+        w = graph[u][i];
+//                if we want to print the BI Connected  components
 
-		if(dfn[w] == NOT_VISITED)	// for each bcc, happens once ONLY
-		{
-			bicon(w, u);
-			low[u] = min(low[u], low[w]);
+//        if(v!=w && dfn[w]<dfn[u])
+//            component.push( make_pair(u, w));
 
-			if(low[w] >= dfn[u])
-			{
-				if (dfn[u]==0 && root==false)
-					root=true;
-				else
-					artpoints.insert(u);
+        if(dfn[w] == NOT_VISITED)	// for each bcc, happens once ONLY
+        {
+            bicon(w, u);
+            low[u] = min(low[u], low[w]);
 
-				int cnt = 0;
-				do
-				{
-					cnt++;
-					edge = component.top();
-					component.pop();
-					cout<<edge.first+1<<" "<<edge.second+1<<"\n"; 
-				}while(edge.first != u || edge.second != w);
+            if(low[w] >= dfn[u])
+            {
+                if (dfn[u]==0 && root==false)
+                    root=true;
+                else
+                    artpoints.insert(u);
 
-				if(cnt == 1)
-					cout<<edge.second+1<<" "<<edge.first+1<<"\n"; 
-			}
-		}
-		else if(w != v)
-			low[u] = min(low[u], dfn[w]);
-	}		
+//                if we want to print the BI Connected  components
+//                int cnt = 0;
+//                do
+//                {
+//                    cnt++;
+//                    edge = component.top();
+//                    component.pop();
+//                    cout<<edge.first+1<<" "<<edge.second+1<<"\n";
+//                }while(edge.first != u || edge.second != w);
+//
+//                if(cnt == 1)
+//                    cout<<edge.second+1<<" "<<edge.first+1<<"\n";
+            }
+        }
+        else if(w != v)
+            low[u] = min(low[u], dfn[w]);
+    }
 }
 
-void dfnlow(int u, int v)	//Just for calcing Tw tabels
-{
-	int i, w;
 
-	dfn[u] = low[u] = num++;
-	for(i=0;i<graph[u].size();i++)
-	{
-		w = graph[u][i];
-		if(dfn[w] <= NOT_VISITED)
-		{
-			dfnlow(w, u);
-			low[u] = min(low[u], low[w]);
-		}
-		else if(w != v)
-			low[u] = min(low[u], dfn[w]); 
-	}
+void func(int index){
+    int i, n, links, from, to;
+    cin>>n>>links;
+
+
+    init(n);
+    for(i=0;i<links;i++)
+    {
+        cin>>from>>to;
+        graph[from-1].push_back(to-1);
+        graph[to-1].push_back(from-1);
+    }
+    bicon(0, NOT_VISITED);
+    cout<<artpoints.size()<<endl;
+    for(auto item:artpoints){
+        cout<<item+1<<" ";
+    }
 }
 
-int main()
-{
-	#ifndef ONLINE_JUDGE
-	freopen("test.txt", "rt", stdin);
-#endif
 
-	int i, n, links, from, to;
-
-	int cases = 1;
-
-	while(cin>>n>>links)
-	{
-		if(!n && !links)
-			break;
-
-		
-		init(n);
-		for(i=0;i<links;i++)
-		{
-			cin>>from>>to;
-			graph[from-1].push_back(to-1);
-			graph[to-1].push_back(from-1);
-		}
-
-		cout<<cases++<<"\n\n";
-		bicon(0, NOT_VISITED);
-		cout<<"#\n";
-	}
-	return 0;
-}
