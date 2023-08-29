@@ -1,0 +1,232 @@
+//  we need to get the sum over subbsets
+//  will be addressing the following problem: Given a fixed array A of 2^N integers
+//  we need to calculate ∀ x function F(x) = Sum of all A[i] such that x&i = i, i.e., i is a subset of x.
+
+o(3^n)
+
+for (int i = 1; i < 1<<n ; ++i) {
+        for (int j = i; j >0 ; j=(j-1)&i) {
+            value[i]= max(value[i],value[i^j]+value[j]);
+        }
+}
+
+//// but using SOS DP in O(N*2^N)
+
+    ll N;cin>>N;
+    vector<int>A(1<<N);
+    for (int i = 0; i < 1<<N; ++i) {
+        cin>>A[i];
+    }
+    vector<int>F(1<<N);
+    ll dp[1<<N][N+1];
+    for(int mask = 0; mask < (1<<N); ++mask){
+        dp[mask][N] = A[mask];	//handle base case separately (leaf states)
+        for(int i = 0;i < N; ++i){
+            if(mask & (1<<i))
+                dp[mask][i] = dp[mask][i-1] + dp[mask^(1<<i)][i-1];
+            else
+                dp[mask][i] = dp[mask][i-1];
+        }
+        F[mask] = dp[mask][N-1];
+    }
+    for (int i = 0; i < 1<<N; ++i) {
+        cout<<F[i]<<endl;
+    }
+
+/////////////////////////////////////////////////////
+
+    ll N;cin>>N;
+    vector<int>A(1<<N);
+    for (int i = 0; i < 1<<N; ++i) {
+        cin>>A[i];
+    }
+    vector<int>F(1<<N);
+    for(int i = 0; i<(1<<N); ++i)
+        F[i] = A[i];
+    for(int i = 0;i < N; ++i)
+        for(int mask = 0; mask < (1<<N); ++mask){
+            if(mask & (1<<i))
+                F[mask] += F[mask^(1<<i)];
+        }
+    for (int i = 0; i < 1<<N; ++i) {
+        cout<<F[i]<<endl;
+    }
+
+////////////////////////////////////////////////////////////////////////
+
+// https://cses.fi/problemset/task/1654/
+
+
+const ll OO =1e18+10, mod = 1e9+7,mod2=1e9+9,  N=1e6+5,M=25,MOD= 998244353, minOO=LLONG_MIN;
+const double EPS=1e-10;
+const double PI=acos(-1);
+const ll maximum=32768;
+const int NOT_VISITED = -1;
+
+///   هذا الحل من وحي خيال المؤلف واي تشابه بينه و بين اي حل اخر ما هو الا محض الصدفة
+
+
+void func(int index) {
+    ll n;cin>>n;
+    ll log2N=log2(N)+1;
+    ll maxi=1<<log2N;
+    vector<int>vec(maxi);
+    vector<int>freq(maxi);
+
+    for (int i = 0; i < n; ++i) {
+        cin>>vec[i];
+        freq[vec[i]]++;
+    }
+
+    vector<int>F(maxi,0);
+    vector<int>F2(maxi,0);
+    for (int i = 0; i < maxi; ++i) {
+        F[i]=freq[i];
+        F2[i]=freq[i];
+    }
+    for(int i = 0;i < log2N; ++i){
+        for(int mask = 0; mask < (maxi); ++mask){
+            if(mask & (1<<i)) {
+                F[mask] +=  F[mask ^ (1 << i)];
+            }
+        }
+    }
+    for(int i = 0;i < log2N; ++i){
+        for(int mask = maxi-1; mask >= 0; mask--){
+
+            if(!(mask & (1<<i))) {
+                F2[mask]+=  F2[mask ^ (1 << i)];
+            }
+        }
+    }
+    for (int i = 0; i < n; ++i) {
+        cout<<F[vec[i]]<<" "<<F2[vec[i]]<<" "<<n-F[vec[i]^(maxi-1)]<<endl;  	// x|y==x
+        									// x&y==x
+        									// x&y!=0
+    }
+}
+
+/////////////////////////////////////////////
+
+
+// get the maximum value that  x&y=0
+
+void func(int index) {
+    ll n;cin>>n;
+    ll log2N=log2(N)+1;
+    ll maxi=1<<log2N;
+    vector<int>vec(n);
+    vector<bool>freq(maxi);
+ 
+    for (int i = 0; i < n; ++i) {
+        cin>>vec[i];
+        freq[vec[i]]=1;
+    }
+ 
+    vector<int>F(maxi,0);
+    for(int i = 0;i < log2N; ++i){
+ 
+        for(int mask = 0; mask < (maxi); ++mask){
+            F[mask] =max( freq[mask]?mask:0,F[mask]);	//handle base case separately (leaf states)
+ 
+            if(mask & (1<<i)) {
+                F[mask] = max(  F[mask] , F[mask ^ (1 << i)]);
+            }
+        }
+    }
+ 
+    for (int i = 0; i < n; ++i) {
+        cout<<(F[vec[i]^(maxi-1)]? F[vec[i]^(maxi-1)]:-1 )<<' ';
+    }
+}
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+///// to x|y=x
+void forward1(){    // adding element to all its super set
+    fr(bit,MLOG)fr(i,MAXN)if(i&(1<<bit)){dp[i]+=dp[i^(1<<bit)];}}
+void backward1(){    //add a[i] to a[j] if j&i = i
+    fr(bit,MLOG)per(i,MAXN-1,0)if(i&(1<<bit)){dp[i]-=dp[i^(1<<bit)];}}
+
+///// to x&y=x
+
+
+void forward2(){// add elements to its subsets
+    fr(bit,MLOG)per(i,MAXN-1,0)if(i&(1<<bit)){dp[i^(1<<bit)]+=dp[i];}}
+void backward2(){
+    fr(bit,MLOG)fr(i,MAXN)if(i&(1<<bit)){dp[i^(1<<bit)]-=dp[i];}}
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+--> this called Bélády's algorithm
+
+   https://codeforces.com/contest/1480/problem/D2
+
+    ll n;
+    cin >> n;
+    vi a(n + 1, 0);
+    for (int i = 1; i <= n; ++i) {
+        cin >> a[i];
+    }
+    a.resize(unique(a.begin(), a.end()) - a.begin());
+    int ans = a.size() - 1;
+    vector<int> lst(n + 5, 0);
+    vector<int> dp(n + 5);
+    for (int i = 1; i < a.size(); ++i) {
+        dp[i] = dp[i - 1];
+        if (lst[a[i]])
+            dp[i] = max(dp[i], dp[lst[a[i]] + 1] + 1);
+        lst[a[i]] = i;
+    }
+    cout << ans - dp[a.size() - 1] << endl;
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+// handle the dp with bitsit and remove repeated elements to solve it in N*root(N) if the sum (ai)<=N
+
+vector<int>values;
+template<int len = 1>
+ll solve2(int total){
+    if(total>=len){
+        return solve2<min(len*2,N)>(total);
+    }
+    bitset<len>dp;
+    dp[0]=1;
+    for (int i = 0; i < values.size(); ++i) {
+        dp=dp|(dp<<values[i]);
+    }
+    auto item=dp._Find_next(total/2-1);
+    return item*(total-item);
+}
+ll solve(vector<int>&vec,int total){
+    sort(vec.begin(),vec.end());
+ 
+    values.clear();
+    for (int i = 0; i < vec.size(); ++i) {
+        ll counter=1;
+        while (i<vec.size()-1&&vec[i]==vec[i+1]){
+            i++,counter++;
+        }
+        ll st=1;
+        while (st<counter){
+            values.push_back(st*vec[i]);           
+            counter-=st;
+            st*=2;
+        }
+        values.push_back(counter*vec[i]);
+    }
+    return solve2(total);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+Divide &conquer OPt
+
+--> Quadrangle Inquality condition // لازم يتحقق 
+
+ opt (k,i-1)<= opt(k,i) ---> cost(a,c)+cost(b,d)<=cost(a,d)+cost(b,c)  (a<=b<=c<=d)
+
+

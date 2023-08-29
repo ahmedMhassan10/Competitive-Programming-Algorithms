@@ -1,25 +1,3 @@
---> this called Bélády's algorithm
-
-   https://codeforces.com/contest/1480/problem/D2
-
-    ll n;
-    cin >> n;
-    vi a(n + 1, 0);
-    for (int i = 1; i <= n; ++i) {
-        cin >> a[i];
-    }
-    a.resize(unique(a.begin(), a.end()) - a.begin());
-    int ans = a.size() - 1;
-    vector<int> lst(n + 5, 0);
-    vector<int> dp(n + 5);
-    for (int i = 1; i < a.size(); ++i) {
-        dp[i] = dp[i - 1];
-        if (lst[a[i]])
-            dp[i] = max(dp[i], dp[lst[a[i]] + 1] + 1);
-        lst[a[i]] = i;
-    }
-    cout << ans - dp[a.size() - 1] << endl;
-
 ->LIS
 ll dp[N][N],num;
 bool vis[N][N];
@@ -199,9 +177,8 @@ fvec(item,vec){
    		dp[i]=(dp[i]+dp[i-k]+mod)%mod;
   	 }
 }
+
 order is IMP
-
-
 
 vector<int>vec={50,25,10,5,1};
 ll dp[N];
@@ -241,6 +218,7 @@ vll dp(N,0);
                 }
             }
         }
+
 -> Consecutive Ranges Style
 
 time -> O(N*N) space ->O(N*N)
@@ -413,6 +391,89 @@ void func(int index) {
     }
     n=maxString.size();
     clr(dp,-1);
-    ll ans=solve(0,0,'9',1,0);
+    ll ans=solve(0,0,1,1,0);
     cout<<ans;
+}
+
+
+///////////////////////////////////////////
+
+
+// C2. Skyscrapers (hard version)
+
+/// https://codeforces.com/contest/1313/problem/C2
+
+    ll n;cin>>n;
+    vector<int>a(n+1);
+    vector<int>prif(n+1),suff(n+2);
+    vector<int>dp(n+5),dp2(n+5);
+    for (int i = 1; i <=n ; ++i) {
+        cin>>a[i];
+        prif[i]=a[i];
+        prif[i]+=prif[i-1];
+        suff[i]=a[i];
+    }
+    for (int i = n; i >=0 ; i--) {
+        suff[i]+=suff[i+1];
+    }
+    stack<pair<int,int>>st;
+    for (int i = 1; i <= n; ++i) {
+        while (st.size()&&st.top().first>a[i])st.pop();
+        pair<int,int>item={0,0};
+        if(st.size())item=st.top();
+        dp[i]=dp[item.second]+(prif[i]-prif[item.second])-(i-item.second)*a[i];
+        st.push({a[i],i});
+    }
+    while (st.size())st.pop();
+    for (int i = n; i >= 1; i--) {
+        while (st.size()&&st.top().first>a[i])st.pop();
+        pair<int,int>item={0,n+1};
+        if(st.size())item=st.top();
+        dp2[i]=dp2[item.second]+(suff[i]-suff[item.second])+(i-item.second)*a[i];
+        st.push({a[i],i});
+    }
+    ll mini=OO,idx=-1;
+    for (int i = 1; i <=n; ++i) {
+        if(dp[i]+dp2[i]<mini)
+        {
+            mini=dp[i]+dp2[i];
+            idx=i;
+        }
+    }
+///////////////////////////////////////////////////////////////////
+
+// handle the dp with bitsit and remove repeated elements to solve it in N*root(N) if the sum (ai)<=N
+
+vector<int>values;
+template<int len = 1>
+ll solve2(int total){
+    if(total>=len){
+        return solve2<min(len*2,N)>(total);
+    }
+    bitset<len>dp;
+    dp[0]=1;
+    for (int i = 0; i < values.size(); ++i) {
+        dp=dp|(dp<<values[i]);
+    }
+    auto item=dp._Find_next(total/2-1);
+    return item*(total-item);
+}
+ll solve(vector<int>&vec,int total){
+    sort(vec.begin(),vec.end());
+ 
+    values.clear();
+    for (int i = 0; i < vec.size(); ++i) {
+        ll counter=1;
+        while (i<vec.size()-1&&vec[i]==vec[i+1]){
+            i++,counter++;
+        }
+        ll st=1;
+        while (st<counter){
+            values.push_back(st*vec[i]);           
+            counter-=st;
+            st*=2;
+        }
+        values.push_back(counter*vec[i]);
+    }
+    return solve2(total);
 }
