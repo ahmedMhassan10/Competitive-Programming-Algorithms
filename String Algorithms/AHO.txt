@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////////////
 
 
-
+AHO Algorithm
 
 const int mx=26;//len of Alpha
 struct node
@@ -311,4 +311,156 @@ void func(int index){
     cout<<res<<endl;
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+// Dynamic AHO to Delete and add at run time 
+
+
+int sqr=0;
+const int mx=26;//len of Alpha
+
+struct AHO{
+    struct node
+    {
+        node * ch[mx];
+        node * fail;
+        int pat_idx;
+//        vector<int> pat_idx;
+        node()
+        {
+            memset(ch,0,sizeof ch);
+            fail = NULL;
+            pat_idx=0;
+        }
+    }* root;
+
+    void init()
+    {
+        root = new node();
+    }
+
+    void insert(string &s , int idx)// insert strings from  set
+    {
+        node * cur = root;
+
+        for(int i=0; i<s.size(); i++)
+        {
+            int c = s[i]-'a';
+            if (cur->ch[c] == NULL) cur->ch[c] = new node();
+            cur = cur->ch[c];
+        }
+        cur->pat_idx++;
+    }
+
+    node* get(node *k , int c)
+    {
+        while(k->ch[c] == NULL)
+            k = k->fail;
+        k = k->ch[c];
+        return k;
+    }
+
+    void buildAho()// o(mx*(sum[size of si]));
+    {
+        queue <node*> q;
+        for ( int i = 0  ; i < mx; i++)
+        {
+            if( root->ch[i])
+                q.push(root->ch[i]);
+            else
+                root->ch[i] = new node();
+            root->ch[i]->fail = root;
+        }
+        while(!q.empty())
+        {
+            node* cur = q.front();
+            q.pop();
+            for ( int i = 0 ; i < mx ; i++)
+            {
+                if(cur->ch[i])
+                {
+                    node*fail = cur->fail;
+
+                    fail = get(fail,i);
+
+                    cur->ch[i]->fail = fail;
+
+                    q.push(cur->ch[i]);
+                    cur->ch[i]->pat_idx+=fail->pat_idx;
+//                    for ( auto &j : fail->pat_idx)
+//                        cur->ch[i]->pat_idx.push_back(j);
+                }
+            }
+        }
+    }
+    ll count(string&str){
+        ll res=0;
+        auto item=root;
+        for (int i = 0; i < str.size(); ++i) {
+            item= get(item,str[i]-'a');
+            res+=item->pat_idx;
+        }
+        return res;
+    }
+};
+vector<int>up(600),del(N,1),emp(N,1);
+map<string,int>ma;
+vector<string>vs(N);
+AHO aho[600];
+bool solve(int idx){
+    if(up[idx]==0)return 0;
+    ll sum=0;
+    vector<string>v;
+    for (int i = idx*sqr; i < (idx+1)*sqr ; ++i) {
+        if(i>=del.size())break;
+        if(del[i]==0){
+            v.push_back(vs[i]);
+            sum=1;
+        }
+    }
+    if(sum==0){
+        if(emp[idx]==0){
+            delete(aho[idx].root);
+        }
+        emp[idx]=1;
+        return 1;
+    }
+    emp[idx]=0;
+    aho[idx].init();
+    ll id=0;
+    for (auto item:v) {
+        aho[idx].insert(item,id++);
+    }
+    aho[idx].buildAho();
+    up[idx]=0;
+    return 0;
+}
+void func(int index){
+    ll q;cin>>q;
+    sqr= sqrtl(q)+1;
+    for (int i = 0; i < q; ++i) {
+        ll t;
+        cin>>t>>vs[i];
+        ll sz=vs[i].size();
+        if(t==1){
+            ma[vs[i]]=i;
+            up[i/sqr]=1;
+            del[i]=0;
+        }else if(t==2){
+            int idx=ma[vs[i]];
+            del[idx]=1;
+            up[idx/sqr]=1;
+        }else{
+            ll ans=0;
+            for (int j = 0; j < sqr; ++j) {
+                solve(j);
+                if(emp[j]){
+                    continue;
+                }
+                ans+=aho[j].count(vs[i]);
+            }
+            cout<<ans<<'\n';
+            cout.flush();
+        }
+    }
+}

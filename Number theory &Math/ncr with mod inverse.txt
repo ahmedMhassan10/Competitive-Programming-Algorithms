@@ -33,12 +33,12 @@ ll nPr( ll n , ll r, ll mod)
 }
 
 void testCase(ll mod,ll n=N-1) {
-   /* fact[0] = inv[0] = 1;
-    for ( ll i = 1 ; i <= n ; i++)
-    {
-        fact[i] = mul(i,fact[i-1],mod);
-        inv[i] = fop(fact[i],mod-2,mod);
-    }*/
+//    fact[0] = inv[0] = 1;
+//    for ( ll i = 1 ; i <= n ; i++)
+//    {
+//        fact[i] = mul(i,fact[i-1],mod);
+//        inv[i] = fop(fact[i],mod-2,mod);
+//    }
     fact[0] = fact[1] = inv[0] = inv[1] = 1;
     for (int i = 2; i <= n; i++)
     {

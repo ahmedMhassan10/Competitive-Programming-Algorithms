@@ -1,7 +1,7 @@
 //used with offline querey (MO ALg) O((N+Q)sqrt(N))
 
 --->NOT with update operations
---->10000 elements
+--->100000 elements
 
 const ll NN=2e5+5,MM=1e6+5;
 int arr[NN], frq[MM], sz=555;

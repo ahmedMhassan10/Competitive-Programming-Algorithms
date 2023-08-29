@@ -55,3 +55,50 @@
         s3.push(n - 1 - i);
         s4.push(n - 1 - i);
     }
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//// get the maximum area
+
+
+
+////https://cses.fi/problemset/task/1142/
+
+
+
+    int num;cin>>num;
+    int a[num],  mnl[num], mnr[num];
+    int maxi=0;
+    for(int i = 0; i < num; i++)
+    {
+        cin>>a[i];
+        maxi=max(a[i],maxi);
+    }
+    stack<int>  s2,  s4;
+    for(int i = 0; i < num; i++) {
+        while(!s2.empty() && a[s2.top()] >= a[i])
+            s2.pop();
+        while(!s4.empty() && a[s4.top()] >= a[num - 1 - i])
+            s4.pop();
+        mnl[i] = s2.empty() ? -1: i - s2.top();//distance
+        mnr[num - 1 - i] = s4.empty() ? -1: s4.top() - (num - 1 - i);//distance
+        s2.push(i);
+        s4.push(num - 1 - i);
+    }
+    for (int i = 0; i < num; ++i) {
+        if(mnl[i]==-1){
+            mnl[i]=i+1;
+        }
+        if(mnr[i]==-1){
+            mnr[i]=num-i;
+        }
+    }
+    for (int i = 0; i < num; ++i) {
+        ll prev=mnl[i],next=mnr[i];
+        ll len2=(prev-1)+(next-1)+1;
+        ll res=len2*a[i];
+        maxi=max(maxi,res);
+    }
+    cout<<maxi;

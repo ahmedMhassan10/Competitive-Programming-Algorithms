@@ -5,4 +5,47 @@ using namespace __gnu_pbds;
 typedef tree< ll, null_type, less<ll>, rb_tree_tag, tree_order_statistics_node_update> ordered_set;
 
 ordered_set se;// decleration
+
 se.order_of_key(item);// number of elements lower than item.
+
+
+///////////////////////
+to get nested segment and outer segments
+
+typedef tree< pll, null_type, less<pll>, rb_tree_tag, tree_order_statistics_node_update> ordered_set;
+
+struct query {
+    ll l, r, idx;
+};
+
+bool cmp(query &a, query &b) {
+    if (a.l  != b.l )
+        return a.l  < b.l ;
+    return a.r > b.r;
+}
+
+void solve(int inde) {
+    ll num;cin>>num;
+    vector<query>vec(num);
+    fo(i,num){
+        cin>>vec[i].l>>vec[i].r;
+        vec[i].idx=i;
+    }
+    vll containIt(num),inIt(num);
+    sort(all(vec),cmp);
+
+    ordered_set se;/// create ordered set for pairs
+
+    fo(i,num){
+        se.insert({vec[i].r,-1*i});
+        containIt[vec[i].idx]=se.size()-se.order_of_key({vec[i].r,-1*i})-1;
+    }
+    se.clear();
+    fn(i,num-1,0){
+        se.insert({vec[i].r,-1*i});
+        inIt[vec[i].idx]=se.order_of_key({vec[i].r,-1*i});
+    }
+    fvec(item,inIt)cout<<item<<" ";
+    cout<<'\n';
+    fvec(item,containIt)cout<<item<<" ";
+}

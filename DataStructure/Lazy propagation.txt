@@ -77,8 +77,6 @@ void propagate( int node , int l , int r )
         return;
     ll n=r-l+1;
     ll start=lazy[node]-(r-l)*counter[node];
-    ll c=counter[node]*(n-1)+2*start;
-    ll nn=n*(2*start+(n-1)*counter[node])/2;
     seg[node] +=n*(2*start+(n-1)*counter[node])/2;
     if(l != r) {
         int md = l + r >> 1 ;

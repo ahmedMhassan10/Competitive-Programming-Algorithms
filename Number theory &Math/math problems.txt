@@ -1,5 +1,5 @@
-
-
+// get the number of ways to reach from (x1,y1) to (x2,y2)  ==> (x2-x2+y2-y1-2)!/((x2-x1+1)!*(y2-y1+1)!)
+if (x1,y1)=(1,1) => (x2-1)C(x2+y2-2) 
 ///Josephus Queries
 
 get the  removed child in k th rank in Josephus problem
@@ -20,7 +20,7 @@ ll f(ll n,ll k)// n the number ,k the rank
 
 ///////////////////////////////
 
-get root of quadratic function
+
 
 
 to get (a^(b^c)) in mod area we use fermat theory 
@@ -43,6 +43,7 @@ void solve(int inde) {
 }
 
 //////////////////////////////////////////////////////////////////////////////
+get root of quadratic function
 
 float a, b, c, x1, x2, discriminant, realPart, imaginaryPart;
     cout << "Enter coefficients a, b and c: ";

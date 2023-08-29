@@ -1,0 +1,117 @@
+
+
+// https://atcoder.jp/contests/dp/tasks/dp_z
+
+
+struct Line {
+    ll m, b;
+    ll operator()(const ll x) const {
+        return m * x + b;
+    }
+} seg[N<<2];
+
+int n, lo[N<<2], hi[N<<2];
+ll x, s[N], f[N];
+void build(int i, int l, int r){
+    lo[i] = l; hi[i] = r;
+    seg[i] = {0, OO};
+    if(l == r)  return;
+    int m = (l+r)/2;
+    build(2*i, l, m);
+    build(2*i+1, m+1, r);
+}
+
+void insert(int i, Line L){
+    int l = lo[i], r = hi[i];
+    if(l == r){
+        if(L(l) < seg[i](l))
+            seg[i] = L;
+        return;
+    }
+
+    int m = (l+r)/2;
+    if(seg[i].m < L.m)  swap(seg[i], L);
+    if(seg[i](m) > L(m)){
+        swap(seg[i], L);
+        insert(2*i, L);
+    } else insert(2*i+1, L);
+}
+
+ll query(int i, ll x){
+    int l = lo[i], r = hi[i];
+    if(l == r)
+        return seg[i](x);
+
+    int m = (l+r)/2;
+    if(x < m)
+        return min(seg[i](x), query(2*i, x));
+    else
+        return min(seg[i](x), query(2*i+1, x));
+}
+
+void func(int index) {
+    ll n,c;
+    cin>>n>>c;
+    vector<int>h(n);
+    for (int i = 0; i < n; ++i) {
+        cin>>h[i];
+    }
+    build(1,1,maximum);
+    insert(1,{-2*h[0],h[0]*h[0]});
+    for (int i = 1; i < n-1; ++i) {
+        ll q= query(1,h[i])+h[i]*h[i]+c;
+        insert(1,{-2*h[i],h[i]*h[i]+q});
+    }
+    cout<<query(1,h[n-1])+h[n-1]*h[n-1]+c<<endl;
+
+}
+
+////////////////////////////////////////////////////////////////////////////////////
+
+Dynamic
+
+struct Line
+{
+    mutable ll k, m, p;
+ 
+    bool operator<(const Line &o) const
+    { return k < o.k; }
+ 
+    bool operator<(ll x) const
+    { return p < x; }
+};
+ 
+struct CHT : multiset<Line, less<>>
+{
+    // (for doubles, use inf = 1/.0, div(a,b) = a/b)
+    static const ll inf = LLONG_MAX;
+ 
+    ll div(ll a, ll b)
+    { // floored division
+        return a / b - ((a ^ b) < 0 && a % b);
+    }
+ 
+    bool isect(iterator x, iterator y)
+    {
+        if(y == end()) return x->p = inf, 0;
+        if(x->k == y->k) x->p = x->m > y->m ? inf : -inf;
+        else x->p = div(y->m - x->m, x->k - y->k);
+        return x->p >= y->p;
+    }
+ 
+    void add(ll k, ll m)
+    {
+        auto z = insert({k, m, 0}), y = z++, x = y;
+        while(isect(y, z)) z = erase(z);
+        if(x != begin() && isect(--x, y)) isect(x, y = erase(y));
+        while((y = x) != begin() && (--x)->p >= y->p)
+            isect(x, erase(y));
+    }
+ 
+    ll query(ll x)
+    {
+        assert(!empty());
+        auto l = *lower_bound(x);
+        return l.k * x + l.m;
+    }
+};

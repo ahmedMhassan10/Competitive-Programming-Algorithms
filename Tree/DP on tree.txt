@@ -183,7 +183,7 @@ void solve(int src, int par, int par_ans)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-get the distance between all nodes
+get the sum of distance between all nodes
 
 
 ll num;

@@ -1,3 +1,5 @@
+// Lca Build
+
 
 int n , ancestor[N][M], lvl[N];
 vector < int > g[N];
@@ -52,6 +54,9 @@ ll getDist(ll u,ll v){
     ll lca= getLCA(u,v);
     return lvl[u]+lvl[v]-2*lvl[lca];
 }
+
+
+
 // LCA &Sparse table to get max 
 
 int n , ancestor[N][M], lvl[N],sp[N][M];
