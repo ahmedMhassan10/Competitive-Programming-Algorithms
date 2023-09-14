@@ -140,21 +140,43 @@ void func(int index) {
     }
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////
-
-///// to x|y=x
-void forward1(){    // adding element to all its super set
-    fr(bit,MLOG)fr(i,MAXN)if(i&(1<<bit)){dp[i]+=dp[i^(1<<bit)];}}
-void backward1(){    //add a[i] to a[j] if j&i = i
-    fr(bit,MLOG)per(i,MAXN-1,0)if(i&(1<<bit)){dp[i]-=dp[i^(1<<bit)];}}
-
-///// to x&y=x
-
-
-void forward2(){// add elements to its subsets
-    fr(bit,MLOG)per(i,MAXN-1,0)if(i&(1<<bit)){dp[i^(1<<bit)]+=dp[i];}}
-void backward2(){
-    fr(bit,MLOG)fr(i,MAXN)if(i&(1<<bit)){dp[i^(1<<bit)]-=dp[i];}}
-
+////// to understand that you should draw trie and make level by level
+//////////   x|y==x   if  we use only forward we have all subset of mask
+void forward1(vi &f){
+    for (int bit = 0; bit <M ; ++bit) {
+        for (int mask = 0; mask < N; ++mask) {
+            if (mask & (1 << bit)) f[mask] += f[mask ^ (1 << bit)];
+        }
+    }
+}
+//////// if we have subset from array in mask   f[mask] has all subset from array that has  | == mask aw less
+////////if i used backward i make inclusion exclusion to f[mask] has exact subset from array that has  | == mask
+//////// f[mask] should == fastpow(2,f[mask]);
+void backward1(vi &f){
+    for (int bit = 0; bit <M ; ++bit) {
+        for (int mask = N-1; mask >=0; --mask) {
+            if (mask & (1 << bit)) f[mask] -= f[mask ^ (1 << bit)];
+        }
+    }
+}
+//////////   x&y==x   if  we use only forward we have all superset of mask
+void forward2(vi &f) {
+    for (int bit = 0; bit < M; ++bit) {
+        for (int mask = N - 1; mask >= 0; --mask) {
+            if (mask & (1 << bit)) f[mask ^ (1 << bit)] += f[mask];
+        }
+    }
+}
+//////// if we have subset from array in mask   f[mask] has all subset from array that has  & == mask aw more
+////////if i used backward i make inclusion exclusion to f[mask] has exact subset from array that has  & == mask
+//////// f[mask] should == fastpow(2,f[mask]);
+void backward2(vi &f) {
+    for (int bit = 0; bit < M; ++bit) {
+        for (int mask = 0; mask < N; ++mask) {
+            if (mask & (1 << bit)) f[mask ^ (1 << bit)] -= f[mask];
+        }
+    }
+}
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 --> this called Bélády's algorithm

@@ -134,6 +134,15 @@ int test(int u,int v){
 }
 
 
+    in tree 2 path get intersection
+        cin >> a >> b >> c >> d;
+        a--, b--, c--, d--;
+        int v1 = dist(a,b) + dist(c,d);
+        int v2 = min(dist(a,c) + dist(b,d), dist(a,d) + dist(b,c));
+        if(v1 < v2)cout << 0 << '\n';
+        else cout << (v1 - v2) / 2 + 1 << '\n';
+
+
 /////////////////////////////////////////////////
 binary lifting build 
 

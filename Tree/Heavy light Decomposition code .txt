@@ -1,322 +1,125 @@
-//// hld on SUM
+//// hld on Max
 
 
-ll seg[N<<2];
- 
-void update(ll node,ll l ,ll r,ll idx,ll val) {
+//#pragma GCC optimize("Ofast,no-stack-protector")
+//#pragma GCC optimize("unroll-loops")
+//#pragma GCC optimize("fast-math")
+
+int seg[N<<2];
+int arr[N];
+void Build_seg(int node,int l , int r) {// DONT FORGET BUILD IN MAIN YA 7OMAR
+    if (l == r) {
+        seg[node] = arr[l];
+        return;
+    }
+    int mid = (l + r) / 2;
+    Build_seg(node * 2, l, mid);
+    Build_seg(node * 2 + 1, mid + 1, r);
+    seg[node] = max(seg[node * 2] , seg[node * 2 + 1]);// DONT FORGET BUILD IN MAIN YA 7OMAR
+}
+void update(int node,int l ,int r,int idx,int val) {// DONT FORGET BUILD IN MAIN YA 7OMAR
     if (l == r) {
         seg[node] = val;
         return;
     }
-    ll mid = (l + r) / 2;
-    if (idx <= mid) update(node * 2, l, mid, idx, val);
-    else update(node * 2 + 1, mid + 1, r, idx, val);
-    seg[node] = (seg[node * 2] + seg[node * 2 + 1]);
+    int mid = (l + r) / 2;
+    if (idx <= mid) update(node * 2, l, mid, idx,val);
+    else update(node * 2 + 1, mid + 1, r, idx,val);
+    seg[node] = max(seg[node * 2] , seg[node * 2 + 1]);// DONT FORGET BUILD IN MAIN YA 7OMAR
 }
-ll query(ll node,ll l ,ll r,ll st, ll en) {
-    ll mid = (l + r) / 2;
-    if (st > r || en < l)return 0;
-    if (l >= st && r <= en)return seg[node];
-    return (query(node * 2, l, mid, st, en)+ query(node * 2 + 1, mid + 1, r, st, en));
+int query(int node,int l ,int r,int st,int en) {// DONT FORGET BUILD IN MAIN YA 7OMAR
+    if(l>en || r<st){
+        return 0;
+    }
+    if(l>=st && r<=en){
+        return seg[node];
+    }
+    int md= (l+r)/2 ;
+    return max(query(node*2,l,md,st,en),query(node*2+1,md+1,r,st,en));// DONT FORGET BUILD IN MAIN YA 7OMAR
 }
-  
-////////////////////////////////////////////////////////////////// segment above
+//////////////////////////////////////////////////////////////////////////////////////
 
-int isValueOnEdge = 1;  // switch to 0 for value on node
-vector<vector<int>>  adj;
-vector<vector<int>> treeEdgeIdx;
-vector<int> edge_to;
-vector<int> edge_cost;
-vector<int> parent(N),lvl(N,0),sub(N,1), heavy(N,-1), root(N), segTreePos(N);
 
-void dfs(ll node,ll par) {
-    ll maxo = 0, cnt = 0;
-    parent[node] = par;
-    for (auto ch: adj[node]) {
-        if (ch == par)continue;
-        ll edgeIdx = treeEdgeIdx[node][cnt++];
-        lvl[ch] = lvl[node] + 1;
-        dfs(ch, node);
-        sub[node] += sub[ch];
-        edge_to[edgeIdx] = ch;
-        if (sub[ch] > maxo) {
-            maxo = sub[ch];
-            heavy[node] = ch;
+vector<int> parent, depth, heavy, head, pos;
+int cur_pos,n;
+int dfs(int v, vector<vector<int>> const& adj) {
+    int size = 1;
+    int max_c_size = 0;
+    for (int c : adj[v]) {
+        if (c != parent[v]) {
+            parent[c] = v, depth[c] = depth[v] + 1;
+            int c_size = dfs(c, adj);
+            size += c_size;
+            if (c_size > max_c_size)
+                max_c_size = c_size, heavy[v] = c;
         }
     }
+    return size;
 }
-void Build(ll node) {
-    dfs(node, -1);
-    for (int chainRoot = 0, pos = 0; chainRoot < adj.size(); ++chainRoot) {
-        if (parent[chainRoot] == -1 || heavy[parent[chainRoot]] != chainRoot) {
-            for (int j = chainRoot; j != -1; j = heavy[j])  // iterate on a chain
-                root[j] = chainRoot, segTreePos[j] = pos++;
-        }
+
+void decompose(int v, int h, vector<vector<int>> const& adj) {
+    head[v] = h, pos[v] = cur_pos++;
+    if (heavy[v] != -1)
+        decompose(heavy[v], h, adj);
+    for (int c : adj[v]) {
+        if (c != parent[v] && c != heavy[v])
+            decompose(c, c, adj);
     }
 }
 
-ll query_Chain(int l, int r) {
-    if(l>r)swap(l,r);
-    return query(1, 0, adj.size() - 2, l-1, r-1);
+void init(vector<vector<int>> const& adj) {
+    int n = adj.size();
+    parent = vector<int>(n);
+    depth = vector<int>(n);
+    heavy = vector<int>(n, -1);
+    head = vector<int>(n);
+    pos = vector<int>(n);
+    cur_pos = 0;
+    dfs(0, adj);
+    decompose(0, 0, adj);
 }
- 
-void updatePos(int treeNode, int value) {
-    update(1, 0, adj.size() - 2, segTreePos[treeNode] - 1, value);
-}
- 
-ll queryPath(int u, int v) {
-    ll res = 0;  // be careful from u = v for isValueOnEdge
-    for (; root[u] != root[v]; v = parent[root[v]]) {
-        if (lvl[root[u]] > lvl[root[v]])
-            swap(u, v);
-        res = (res + query_Chain(segTreePos[root[v]], segTreePos[v]));
+int hldQuery(int a, int b) {
+    int res = 0;
+    for (; head[a] != head[b]; b = parent[head[b]]) {
+        if (depth[head[a]] > depth[head[b]])
+            swap(a, b);
+        int cur_heavy_path_max = query(1,0,n-1,pos[head[b]], pos[b]);
+        res = max(res, cur_heavy_path_max);
     }
-    if (lvl[u] > lvl[v])
-        swap(u, v);
-    if (!isValueOnEdge || u != v)
-        res = (res + query_Chain(segTreePos[u] + isValueOnEdge, segTreePos[v]));
+    if (depth[a] > depth[b])
+        swap(a, b);
+    int last_heavy_path_max = query(1,0,n-1,pos[a], pos[b]);
+    res = max(res, last_heavy_path_max);
     return res;
 }
- 
- 
-void solve() {
-    ll n, q;
-    cin >> n >> q;
-    isValueOnEdge = 0;
-    adj.clear(), edge_cost.clear(), treeEdgeIdx.clear(), edge_to.clear();
-    adj.resize(n + 1), edge_cost.resize(n + 1), treeEdgeIdx.resize(n + 1), edge_to.resize(n + 1);
- 
-    for (int i = 1; i <= n; ++i) {
-        cin >> edge_cost[i];
+void func(int index) {
+    int q;
+    cin>>n>>q;
+    vector<int>values(n);
+    for (int i = 0; i < n; ++i) {
+        cin>>values[i];
     }
- 
-    for (int i = 0; i < n - 1; ++i) {
-        ll x, y, c;
-        cin >> x >> y;
-        adj[x].push_back(y);
-        adj[y].push_back(x);	
-        treeEdgeIdx[x].push_back(i), treeEdgeIdx[y].push_back(i);
+    vector<vector<int>>adj(n);
+    for (int i = 0; i < n-1; ++i) {
+        int u,v;cin>>u>>v;u--,v--;
+        adj[u].push_back(v);
+        adj[v].push_back(u);
     }
-    Build(1);
-    for (int i = 1; i <= n; ++i)
-        updatePos(i, edge_cost[i]);
+
+    init(adj);
+    for (int i = 0; i < n; ++i) {
+        arr[pos[i]]=values[i];
+//        update(1,0,n-1,pos[i],values[i]);
+    }
+    Build_seg(1,0,n-1);
     for (int i = 0; i < q; ++i) {
-        ll op;
-        cin >> op;
-        if (op == 1) {
-            ll no, val;
-            cin >> no >> val;
-            updatePos(no, val);
-        } else {
-            ll u;
-            cin >> u ;
-            cout << queryPath(u, 1) << " ";
+        ll t,u,v;cin>>t>>u>>v;
+        if(t==1){
+            u--;
+            update(1,0,n-1,pos[u],v);
+        }else{
+            u--,v--;
+            cout<<hldQuery(u,v)<<' ';
         }
-    }
-}
-signed main() {
-    ios_base::sync_with_stdio(0);
-    cin.tie(0);
-    cout.tie(0);
-    ll t = 1;
-    // cin >> t;
-    while (t--) {
-        solve();
-    }
-}
-
-///////*//*/*
-
-/// PPPPillow cooooode
-
-#pragma GCC optimize("O3")
-#pragma GCC optimize ("unroll-loops")
-#pragma GCC target("avx,avx2,fma")
-
-#include "bits/stdc++.h"
-
-using namespace std;
-
-#define pb push_back
-#define F first
-#define S second
-#define f(i, a, b)  for(int i = a; i < b; i++)
-#define all(a)  a.begin(),a.end()
-#define rall(a) a.rbegin(),a.rend()
-#define sz(x) (int)(x).size()
-#define mp(x, y) make_pair(x,y)
-#define popCnt(x) (__builtin_popcountll(x))
-//#define int ll
-
-using ll = long long;
-using ii = pair<int, int>;
-using ull = unsigned long long;
-
-const int N = 5e5 + 5, LG = 18, MOD = (119 << 23) + 1;
-const long double PI = acos(-1);
-const long double EPS = 1e-7;
-namespace segTree {
-    pair<ii, ii> t[N << 2];
-    int lz[N << 2];
-    int n;
-
-    pair<ii, ii> mrg(pair<ii, ii> a, pair<ii, ii> b) {
-        if (a.F.F > b.F.F)swap(a, b);
-        return make_pair(b.F, max({a.F, b.S}));
-    }
-
-    void build(int node, int s, int e) {
-        lz[node] = 0;
-        if (s == e) {
-            t[node] = make_pair(ii(0, s), ii(-1e9, n + 1));
-            return;
-        }
-        int md = (s + e) >> 1;
-        build(node << 1, s, md);
-        build(node << 1 | 1, md + 1, e);
-        t[node] = mrg(t[node << 1], t[node << 1 | 1]);
-    }
-
-    void push(int node, int s, int e) {
-        if (!lz[node])return;
-        t[node].F.F += lz[node];
-        t[node].S.F += lz[node];
-        if (s != e) {
-            lz[node << 1] += lz[node];
-            lz[node << 1 | 1] += lz[node];
-        }
-        lz[node] = 0;
-    }
-
-    void update(int node, int s, int e, int l, int r, int v) {
-        if (l <= s && e <= r) {
-            lz[node] += v;
-            push(node, s, e);
-            return;
-        }
-        int md = (s + e) >> 1;
-        push(node << 1, s, md);
-        push(node << 1 | 1, md + 1, e);
-        if (l <= md)
-            update(node << 1, s, md, l, r, v);
-        if (r > md)
-            update(node << 1 | 1, md + 1, e, l, r, v);
-        t[node] = mrg(t[node << 1], t[node << 1 | 1]);
-    }
-
-    pair<ii, ii> query(int node, int s, int e, int l, int r) {
-        push(node, s, e);
-        if (l <= s && e <= r)
-            return t[node];
-        int md = (s + e) >> 1;
-        if (r <= md)
-            return query(node << 1, s, md, l, r);
-        else if (l > md)
-            return query(node << 1 | 1, md + 1, e, l, r);
-        else
-            return mrg(query(node << 1, s, md, l, r),
-                       query(node << 1 | 1, md + 1, e, l, r));
-    }
-
-}
-namespace HLD {
-    int sz[N], nxt[N];
-    int in[N], out[N], rin[N], timer;
-    vector<int> adj[N];
-    int par[N];
-    int n;
-
-    void init_hld() {
-        for (int i = 1; i <= n; i++) {
-            adj[i].clear();
-        }
-        timer = 0;
-    }
-
-    void dfs_sz(int node = 1) {
-        sz[node] = 1;
-        for (auto &v: adj[node]) {
-            par[v] = node;
-            dfs_sz(v);
-            sz[node] += sz[v];
-            if (sz[v] > sz[adj[node][0]])
-                swap(v, adj[node][0]);
-        }
-    }
-
-    void dfs_hld(int node = 1) {
-        in[node] = ++timer;
-        rin[in[node]] = node;
-        for (auto u: adj[node]) {
-            nxt[u] = (u == adj[node][0] ? nxt[node] : u);
-            dfs_hld(u);
-        }
-        out[node] = timer;
-    }
-
-    void updateChain(int node, int target = 1) {
-        while (true) {
-            if (nxt[node] == nxt[target]) { ///same chain
-                segTree::update(1, 1, n, in[target], in[node], +1);
-                break;
-            } else {
-                segTree::update(1, 1, n, in[nxt[node]], in[node], +1);
-                node = par[nxt[node]];
-            }
-        }
-    }
-
-    pair<ii, ii> getNodeValue(int node) {
-        return segTree::query(1, 1, n, in[node], out[node]);
-    }
-}
-
-
-void doWork() {
-
-    int n;
-    cin >> n;
-    vector<int> par(n + 1);
-    segTree::n = HLD::n = n;
-    segTree::build(1, 1, n);
-    HLD::nxt[1] = 1;
-    HLD::init_hld();
-    f(i, 2, n + 1) {
-        cin >> par[i];
-        HLD::adj[par[i]].push_back(i);
-    }
-    HLD::dfs_sz(1);
-    HLD::dfs_hld(1);
-    HLD::updateChain(1);
-    int curCentroid = 1;
-    f(i, 2, n + 1) {
-        HLD::updateChain(i);
-        auto p = HLD::getNodeValue(curCentroid);
-        if (HLD::getNodeValue(curCentroid).F.F * 2 < i) {
-            curCentroid = par[curCentroid];
-        } else if (p.S.F > i - p.S.F && p.S.S != p.F.S) {
-            curCentroid = HLD::rin[p.S.S];
-        } else {
-            int val = max(p.S.F, i - p.F.F);
-            cout << i - 2 * val << " ";
-            continue;
-        }
-        p = HLD::getNodeValue(curCentroid);
-        int val = max(p.S.F, i - p.F.F);
-        cout << i - 2 * val << " ";
-
-    }
-    cout << "\n";
-}
-
-int32_t main() {
-#ifdef ONLINE_JUDGE
-    ios_base::sync_with_stdio(0);
-    cin.tie(0);
-#endif // ONLINE_JUDGE
-    int t = 1;
-    cin >> t;
-    while (t--) {
-        doWork();
     }
 }

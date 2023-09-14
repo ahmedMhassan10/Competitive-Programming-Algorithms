@@ -1,54 +1,159 @@
 /// centroid is the node which cut tree into 2 small unconnected trees 
+Fixed-Length Paths I
 
+int n, k;
 vector<int> g[N];
 int sz[N];
 
 ll ans = 0;
-int cnt[N]{1}, mx_depth;
-bool processed[N];
+int cnt[200001]{1}, mx_depth;
+bool processed[200001];
 
-int get_subtree_sizes(int node, int parent = 0) {//(unchageable)
+int get_subtree_sizes(int node, int parent = 0) {
     sz[node] = 1;
-    for (int i : g[node]) if (!processed[i] && i != parent)
+    for (int i : g[node])
+        if (!processed[i] && i != parent)
             sz[node] += get_subtree_sizes(i, node);
     return sz[node];
 }
 
-int get_centroid(int desired, int node, int parent = 0) {//(unchageable)-->desired is the new size
+int get_centroid(int desired, int node, int parent = 0) {
     for (int i : g[node])
         if (!processed[i] && i != parent && sz[i] >= desired)
             return get_centroid(desired, i, node);
     return node;
 }
 
-void get_cnt(int node, int parent, bool filling, int depth = 1) {  //(changable) you count the answer first then increase it in the array
+void get_cnt(int node, int parent, bool filling, int depth = 1) {
     if (depth > k) return;
     mx_depth = max(mx_depth, depth);
-    if (filling) cnt[depth]++;
-    else ans += cnt[k - depth];
-    for (int i : g[node]) 
-	if (!processed[i] && i != parent)
+    if (filling)
+        cnt[depth]++;
+    else
+        ans += cnt[k - depth];
+    for (int i : g[node])
+        if (!processed[i] && i != parent)
             get_cnt(i, node, filling, depth + 1);
 }
 
 void centroid_decomp(int node = 1) {
-    int centroid = get_centroid(get_subtree_sizes(node) >> 1, node);//(unchageable)
-    processed[centroid] = true;//(unchageable)
+    int centroid = get_centroid(get_subtree_sizes(node) >> 1, node);
+    processed[centroid] = true;
     mx_depth = 0;
     for (int i : g[centroid])
-	 if (!processed[i]) {//(changable)
+        if (!processed[i]) {
             get_cnt(i, centroid, false);
             get_cnt(i, centroid, true);
-    	}
-    fill(cnt + 1, cnt + mx_depth + 1, 0);
-    for (int i : g[centroid]) 
-	if (!processed[i]) 
-		centroid_decomp(i);//(unchageable)
+        }
+    fill(cnt + 1, cnt + mx_depth + 1, 0);// IMP
+    for (int i : g[centroid])
+        if (!processed[i])
+            centroid_decomp(i);
+}
+void solve() {
+    cin>>n>>k;
+    for(int i=0;i<n-1;i++){
+        ll u,v;cin>>u>>v;
+        g[u].push_back(v);
+        g[v].push_back(u);
+    }
+    centroid_decomp();
+    cout<<ans<<'\n';
 }
 
+//////////////////////////////////////////////////////////////////////////////////
+Fixed-Length Paths II
+
+
+#pragma GCC optimize("Ofast,no-stack-protector")
+#pragma GCC optimize("unroll-loops")
+#pragma GCC optimize("fast-math")
+//#pragma GCC target("popcnt")
+struct FenwickTree {
+    vector<int> bit;  // binary indexed tree
+    int n;
+    FenwickTree(int n) {
+        this->n = n;
+        bit.assign(n, 0);
+    }
+    int sum(int r) {
+        int ret = 0;
+        for (; r >= 0; r = (r & (r + 1)) - 1)
+            ret += bit[r];
+        return ret;
+    }
+    int sum(int l, int r) {
+        if(l>r)return 0;
+        return sum(r) - sum(l - 1);
+    }
+    void add(int idx, int delta) {
+        for (; idx < n; idx = idx | (idx + 1))
+            bit[idx] += delta;
+    }
+};
+
+int n, k1,k2;
+vector<int> g[N];
+int sz[N];
+ll ans = 0;
+bool processed[N];
+
+int get_subtree_sizes(int node, int parent = 0) {
+    sz[node] = 1;
+    for (int i : g[node])
+        if (!processed[i] && i != parent)
+            sz[node] += get_subtree_sizes(i, node);
+    return sz[node];
+}
+
+int get_centroid(int desired, int node, int parent = 0) {
+    for (int i : g[node])
+        if (!processed[i] && i != parent && sz[i] >= desired)
+            return get_centroid(desired, i, node);
+    return node;
+}
+void sol(int node,int par,int dep,vector<int>&dis){
+    if(dep>k2)return;
+    dis.push_back(dep);
+    for (auto item:g[node]) {
+        if(processed[item]||item==par)continue;
+        sol(item,node,dep+1,dis);
+    }
+}
+void centroid_decomp(int node = 1) {
+    int val=get_subtree_sizes(node);
+    int centroid = get_centroid(val >> 1, node);
+    processed[centroid] = true;
+    FenwickTree fenTree=FenwickTree((val)*3);
+    fenTree.add(0,1);
+    vector<int>dis;
+    for (int i : g[centroid])
+        if (!processed[i]) {
+            dis.clear();
+            sol(i,centroid,1,dis);
+            for (auto item:dis) {
+                ans += fenTree.sum(max(0ll,k1-item),min(val,k2-item));
+            }
+            for (auto item:dis) {
+                fenTree.add(item,1);
+            }
+        }
+    for (int i : g[centroid])
+        if (!processed[i])
+            centroid_decomp(i);
+}
+void solve() {
+    cin>>n>>k1>>k2;
+    for(int i=0;i<n-1;i++){
+        ll u,v;cin>>u>>v;
+        g[u].push_back(v);
+        g[v].push_back(u);
+    }
+    centroid_decomp();
+    cout<<ans;
+}
 
 //////////////////////////////////////////////////////////////////////////////////
-
 Xenia and Tree problem a3333333333333333333333333333333333333333333333333333333
 
 
@@ -150,13 +255,13 @@ ll query(ll v) {
     }
     return ans;
 }
-void func(ll index) {
+void solve() {
     // using Centroid decomposition to rearrange the tree so that each update or query only take log(n)
     // use LCA to compute Distance in Log(n);
     //so that each query and update only take O(log(N)^2)
     ll num,q;
     cin>>num>>q;
-    fo(i,num-1){
+    for(int i=0;i<num-1;i++){
         ll u,v;cin>>u>>v;
         g[u].push_back(v);
         g[v].push_back(u);
@@ -164,7 +269,7 @@ void func(ll index) {
     dfs(1,0);//// Dont put parent in -1 pls it wont pass case 4
     centroid_decomp(1,-1);
     update(1);
-    fo(i,q){
+    for(int i=0;i<q;i++){
         ll t;cin>>t;
         if(t==1){
             ll u;cin>>u;
@@ -175,4 +280,194 @@ void func(ll index) {
         }
     }
 
+}
+
+/////////////////////////////////////////////////////////////////////////
+
+
+
+solve the number of pairs so dist<=k and weights <=maxW
+
+
+https://codeforces.com/problemset/problem/293/E
+
+
+
+int n, k,maxW;
+vector<pair<int,int>> g[N];
+int sz[N];
+ll ans = 0;
+bool processed[N];
+
+int get_subtree_sizes(int node, int parent = 0) {
+    sz[node] = 1;
+    for (auto [i,w] : g[node])
+        if (!processed[i] && i != parent)
+            sz[node] += get_subtree_sizes(i, node);
+    return sz[node];
+}
+
+int get_centroid(int desired, int node, int parent = 0) {
+    for (auto [i,w] : g[node])
+        if (!processed[i] && i != parent && sz[i] >= desired)
+            return get_centroid(desired, i, node);
+    return node;
+}
+vector<pair<int,int>>total,cur;
+void dfs2(int node,int par,int depth,int weight){
+    if(depth<=k&&weight<=maxW)ans++;
+    cur.push_back({depth,weight});
+    for (auto [i,w] : g[node]) {
+        if (par==i||processed[i]) {
+            continue;
+        }
+        dfs2(i,node,depth+1,weight+w);
+    }
+}
+////////////////////  hint of sorting a333333
+ll solve2(vector<pair<int,int>>&vec){
+    ordered_set se;
+    std::sort(vec.begin(), vec.end());
+    ll id=1;
+    for (auto [len,w]:vec) {
+        se.insert({w,id++});
+    }
+    ll last=vec.size()-1;
+    ll res=0;
+    for (int i = 0; i < vec.size(); ++i) {
+        while (last>=0&&vec[i].first+vec[last].first>k){
+            se.erase(se.lower_bound({vec[last].second,0}));
+            last--;
+        }
+        res+= se.order_of_key({maxW-vec[i].second+1,0});
+        if((vec[i].first*2<=k)&&(vec[i].second*2<=maxW))
+            res++;
+    }
+    return res/2;
+}
+////////////////////
+void centroid_decomp(int node = 1) {
+    int centroid = get_centroid(get_subtree_sizes(node) >> 1, node);
+    total.clear();
+    for (auto [i,w] : g[centroid]) {
+        if (!processed[i]) {
+            cur.clear();
+            dfs2(i,centroid,1,w);
+            total.insert(total.end(),cur.begin(),cur.end());
+            ans-= solve2(cur);
+        }
+    }
+    ans+= solve2(total);
+    processed[centroid] = true;
+
+    for (auto [i,w] : g[centroid])
+        if (!processed[i])
+            centroid_decomp(i);
+}
+void solve() {
+    cin>>n>>k>>maxW;
+    for(int i=2;i<=n;i++){
+        ll u,v;cin>>u>>v;
+        g[i].push_back({u,v});
+        g[u].push_back({i,v});
+    }
+    centroid_decomp();
+    cout<<ans<<'\n';
+}
+
+
+/////////////////////////////////////////////////////////////////////////
+
+
+https://codeforces.com/contest/914/problem/E
+
+
+int n;
+vector<int> g[N];
+int sz[N];
+string str;
+vector<int>res(N);
+bool processed[200001];
+vector<int>ma(1<<21);
+int get_subtree_sizes(int node, int parent = 0) {
+    sz[node] = 1;
+    for (int i : g[node])
+        if (!processed[i] && i != parent)
+            sz[node] += get_subtree_sizes(i, node);
+    return sz[node];
+}
+
+int get_centroid(int desired, int node, int parent = 0) {
+    for (int i : g[node])
+        if (!processed[i] && i != parent && sz[i] >= desired)
+            return get_centroid(desired, i, node);
+    return node;
+}
+ll total2=0;
+
+int get_cnt(int node, int parent, int filling, int depth ) {
+    ll total=0;
+    ll tempMask=depth^(1ll<<(str[node]-'a'));
+    if(filling==1){
+        ma[tempMask]++;
+    }else if(filling==-1) {
+        ma[tempMask]--;
+    }else if(filling==0){
+
+           total+=ma[tempMask];
+        for (int i = 0; i < 21; ++i) {
+            ll tt=tempMask^(1ll<<i);
+            total+=ma[tt];
+        }
+        total2+=total;
+        if(__builtin_popcount(tempMask)<=1){
+            total++;total2+=2;
+        }
+    }
+    for (int i : g[node])
+        if (!processed[i] && i != parent)
+            total+=get_cnt(i, node, filling, tempMask);
+    if(filling==0){
+        res[node]+=total;
+        return total;
+    }
+    return total;
+}
+void centroid_decomp(int node = 1) {
+    int centroid = get_centroid(get_subtree_sizes(node) >> 1, node);
+    processed[centroid] = true;
+    ma.clear();
+    total2=0;
+    for (int i : g[centroid])
+        if (!processed[i]) {
+            get_cnt(i, centroid, 1,0);
+        }
+    for (int i : g[centroid])
+        if (!processed[i]) {
+            get_cnt(i, centroid, -1,0);
+            get_cnt(i, centroid, 0,1ll<<(str[centroid]-'a'));
+            get_cnt(i, centroid, 1,0);
+        }
+    for (int i : g[centroid])
+        if (!processed[i]) {
+            get_cnt(i, centroid, -1,0);
+        }
+    res[centroid]+=total2/2;
+    for (int i : g[centroid])
+        if (!processed[i])
+            centroid_decomp(i);
+}
+void solve() {
+    cin>>n;
+    for(int i=0;i<n-1;i++){
+        ll u,v;cin>>u>>v;
+        g[u].push_back(v);
+        g[v].push_back(u);
+    }
+    cin>>str;
+    str="z"+str;
+    centroid_decomp();
+    for (int i = 1; i <= n ; ++i) {
+        cout<<res[i]+1<<' ';
+    }
 }

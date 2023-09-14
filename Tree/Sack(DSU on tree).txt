@@ -3,10 +3,10 @@
 
 sack problems used to in cases of offline queries(no update operations)
 
+https://codeforces.com/contest/246/problem/E
 
 int sz[N],dep[N];
-vector<vll>g(N);
-string str;
+vector<vector<int>>g(N);
 void getsz(int v, int p){
     sz[v] = 1;
     dep[v]=1;
@@ -19,36 +19,45 @@ void getsz(int v, int p){
         }
 }
 
-vector<vector<pi>>query(N);
+vector<vector<pair<int,int>>>query(N);
 vector<bool>visited(N,0);
-vector<vi>values(N,vi(28,0));
-vi res(N);
-void insertInValues(int node){ ///insert new subtree(changable)
-    char ch=str[node-1];
-    values[dep[node]][str[node-1]-'a']++;
-    fvec(item,g[node]){
-        if(!visited[item])
-            insertInValues(item);
+vector<int> res(N);
+vector<int>mapped(N);
+vector<map<int,int>>freq(N);
+vector<int>lvlVal(N);
+void insertInValues(int node,int par){ ///insert new subtree(changable)
+    if(freq[mapped[node]][dep[node]]==0){
+        lvlVal[dep[node]]++;
+    }
+    freq[mapped[node]][dep[node]]++;
+    for(auto item:g[node]){
+        if(!visited[item]&&item!=par)
+            insertInValues(item,node);
     }
 }
-void clearFromValues(int node){   /// clear un keeped subtree(changable)
-    char ch=str[node-1];
-    values[dep[node]][str[node-1]-'a']--;
-    fvec(item,g[node]){
-        if(!visited[item])clearFromValues(item);
+void clearFromValues(int node,int par){   /// clear un keeped subtree(changable)
+    freq[mapped[node]][dep[node]]--;
+    if(freq[mapped[node]][dep[node]]==0){
+        lvlVal[dep[node]]--;
+        freq[mapped[node]].erase(dep[node]);
+    }
+
+    for(auto item:g[node]){
+        if(!visited[item]&&par!=item)
+            clearFromValues(item,node);
     }
 }
-void dfs(int node,int par,bool keep=0){    // all sack problems has same imp but some changes in insertion implementation 
 
-
+void dfs(int node,int par,bool keep=0){    // all sack problems has same imp but some changes in insertion implementation
     int maxSz=-1,greatNode=-1;
-    fvec(item,g[node]){//(un changable)
+    for(auto item:g[node]){//(un changable)
+        if(item==par)continue;
         if(sz[item]>maxSz){
             maxSz=sz[item];
             greatNode=item;
         }
     }
-    fvec(item,g[node]){//(un changable)
+    for(auto item:g[node]){//(un changable)
         if(item!=par&&greatNode!=item)
         {
             dfs(item,node,0);
@@ -58,35 +67,62 @@ void dfs(int node,int par,bool keep=0){    // all sack problems has same imp but
         dfs(greatNode,node,1);
         visited[greatNode]=1;
     }
-    insertInValues(node);
-    fvec(item,query[node]){ //(changable)--> queries calculation
-        ll index=item.S,h=item.F;
-        if(dep[node]>h){
-            res[index]=1;
-            continue;
-        }
-        ll oddCount=0;
-        fo(i,27){
-           oddCount+=values[h][i]%2;
-        }
-        if(oddCount>1){
-            res[index]=0;
-        }else{
-            res[index]=1;
+    insertInValues(node,par);
+    for(auto item:query[node]){ //(changable)--> queries calculation
+        ll index=item.second,depth=item.first;
+        ll nxtLvl=dep[node]+depth;
+        if(nxtLvl>=lvlVal.size())res[index]=0;
+        else{
+            res[index]=lvlVal[nxtLvl];
         }
     }
-    if(maxSz!=-1)visited[greatNode]=0;//(un changable)
+    if(maxSz!=-1)
+        visited[greatNode]=0;//(un changable)
+
     if(keep == false){ //(un changable)
-        clearFromValues(node);
+        clearFromValues(node,par);
+    }
+}
+void solve() {
+    ll n;cin>>n;
+    ll id=1;
+    map<string,int>ma;
+    vector<int>parents;
+    for (int i = 1; i <= n; ++i) {
+        string str;int par;
+        cin>>str>>par;
+        if(ma.count(str)){
+            mapped[i]=ma[str];
+        }else {
+            ma[str]=id;
+            mapped[i]=id++;
+        }
+        if(par){
+            g[par].push_back(i);
+            g[i].push_back(par);
+        }else parents.push_back(i);
+    }
+    ll q;cin>>q;
+    for (int i = 0; i < q; ++i) {
+        ll v,k;cin>>v>>k;
+        query[v].push_back({k,i});
+    }
+    for (auto item:parents) {
+        getsz(item,0);
+        dfs(item,0);
+    }
+    for (int i = 0; i < q; ++i) {
+        cout<<res[i]<<'\n';
     }
 }
 
-
 ////////////////////////////////////////////////////////////////////////
+
+// sack problem to handle in and out Subtree
+
 
 https://codeforces.com/contest/1805/problem/E
 
-// sack problem to handle in and out Subtree
 
 vector<vector<int>>g(N);
 vector<int>cost(N);
@@ -172,5 +208,162 @@ void dfs(int node,int par,bool keep=0){    // all sack problems has same imp but
 
     if(keep == false){ //(un changable)
         clearFromValues(node,par);
+    }
+}
+
+void solve() {
+    ll n;cin>>n;
+    map<int,vector<int>>ma;
+    for (int i = 1; i <= n-1; ++i) {
+        ll u,v;cin>>u>>v;
+        g[u].push_back(v);
+        g[v].push_back(u);
+        edges[{min(u,v),max(u,v)}]=i;
+    }
+    for (int i = 1; i <= n ; ++i) {
+        cin>>cost[i];
+        costssss[cost[i]]++;
+    }
+    for (auto item:costssss) {
+        if(item.second==2){
+            two.insert(item.first);
+        }else if(item.second>2){
+            maxTake=max(maxTake,item.first);
+        }
+    }
+ 
+    while (two.size()){
+        if(*two.begin()<maxTake){
+            two.erase(two.begin());
+        }else break;
+    }
+    for (int i = 1; i <= n  ; ++i) {
+        if(two.find(cost[i])==two.end())
+            cost[i]=0;
+    }
+    if(two.empty()){
+        for (int i = 0; i < n-1; ++i) {
+            cout<<maxTake<<endl;
+        }
+        return;
+    }
+    getsz(1,0);
+    for (int i = 1; i <= n ; ++i) {
+        outM[cost[i]]++;
+        if(outM[cost[i]]==2){
+            out.insert(cost[i]);
+        }
+    }
+    dfs(1,0);
+    for (int i = 1; i <= n-1; ++i) {
+        cout<<res[i]<<endl;
+    }
+}
+
+
+////////////////////////////////////////////////////////////////////////
+
+https://codeforces.com/contest/741/problem/D
+
+ 
+vector<vector<pair<int,int>>>g(N);
+int sz[N],dep[N];
+vector<bool>visited(N,0);
+vector<int> res(N);
+vector<int>msk(N);
+vector<int> maxDist(1<<23,-OO);
+void getsz(int v, int p,int mask){
+    sz[v] = 1;
+    dep[v]=1;
+    msk[v]=mask;
+    if(p!=-1)
+        dep[v]=dep[p]+1;
+    for(auto [u,w] : g[v])
+        if(u != p){
+            getsz(u, v,mask^w);
+            sz[v] += sz[u];
+        }
+}
+ 
+vector<int>subTreeNodes;
+void get(int node,int par){
+    subTreeNodes.push_back(node);
+    for(auto [item,w]:g[node]){
+        if(!visited[item]&&item!=par)
+            get(item,node);
+    }
+}
+ 
+void clearFromValues(int node,int par){   /// clear un keeped subtree(changable)
+    subTreeNodes.clear();
+    get(node,par);
+    for (auto item:subTreeNodes) {
+        maxDist[msk[item]]=-OO;
+    }
+}
+void dfs(int node,int par,bool keep=0){    // all sack problems has same imp but some changes in insertion implementation
+    int maxSz=-1,greatNode=-1;
+    for(auto [item,w]:g[node]){//(un changable)
+        if(item==par)continue;
+        if(sz[item]>maxSz){
+            maxSz=sz[item];
+            greatNode=item;
+        }
+    }
+    for(auto [item,w]:g[node]){//(un changable)
+        if(item!=par&&greatNode!=item)
+        {
+            dfs(item,node,0);
+            res[node]=max(res[node],res[item]);
+        }
+    }
+    if(maxSz!=-1){//(un changable)
+        dfs(greatNode,node,1);
+        res[node]=max(res[node],res[greatNode]);
+        visited[greatNode]=1;
+    }
+    maxDist[msk[node]]=max(maxDist[msk[node]],dep[node]);
+    for(auto [item,w]:g[node]){//(un changable)
+        if(item!=par&&greatNode!=item)
+        {
+            subTreeNodes.clear();
+            get(item,node);
+            for(auto temp:subTreeNodes) {
+                res[node] = max(res[node],dep[temp]+maxDist[msk[temp]]-2*dep[node]);
+                for (int i = 0; i < 23; ++i) {
+                    res[node] = max(res[node],dep[temp]+maxDist[msk[temp]^(1ll<<i)]-2*dep[node]);
+                }
+            }
+            for(auto temp:subTreeNodes) {
+                maxDist[msk[temp]]=max( maxDist[msk[temp]],dep[temp]);
+            }
+        }
+    }
+    res[node] = max(res[node],maxDist[msk[node]]-dep[node]);
+ 
+    for (int i = 0; i < 23; ++i) {
+        res[node] = max(res[node],dep[node]+maxDist[msk[node]^(1ll<<i)]-2*dep[node]);
+    }
+    if(maxSz!=-1)
+        visited[greatNode]=0;//(un changable)
+ 
+    if(keep == false){ //(un changable)
+        clearFromValues(node,par);
+    }
+}
+ 
+void solve() {
+    // great hint to work on prefix of mask from root to nodeeeeees 
+    ll n;cin>>n;
+    map<int,vector<int>>ma;
+    for (int i = 2; i <= n; ++i) {
+        ll u;char v;cin>>u>>v;
+        g[i].push_back({u,1ll<<(v-'a')});
+        g[u].push_back({i,1ll<<(v-'a')});
+    }
+    getsz(1,0,0);
+    dfs(1,0);
+    for (int i = 1; i <= n; ++i) {
+        cout<<res[i]<<' ';
     }
 }

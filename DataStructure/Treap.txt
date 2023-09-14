@@ -402,3 +402,110 @@ void func(int index){
         }
     }
 }
+
+
+
+//////////////////////////////////////////////////
+
+///////////
+
+https://cses.fi/problemset/task/2420
+
+
+ll base=31;
+ll add(ll a, ll b) {return ((a % MOD + b % MOD) + MOD) % MOD;}
+ll multi(ll a, ll b) {return ((a % MOD * b % MOD) + MOD) % MOD;}
+vi pw(N);
+typedef struct item * pitem;
+struct item {
+    int prior, cnt;
+    ll value;
+    ll sum;
+    ll hf,hr;
+    pitem l, r;
+    item (ll value) : value(value), prior(rand()), l(NULL), r(NULL),sum(value),hf(value),hr(value) { }
+};
+int cnt (pitem t) {return t ? t->cnt : 0;}
+int gf (pitem t) {return t ? t->hf : 0;}
+int gr (pitem t) {return t ? t->hr : 0;}
+void upd_cnt (pitem t) {
+    if (t) {
+        t->cnt = 1 + cnt(t->l) + cnt(t->r);
+        // hash forward ,reverse
+        t->hf = add(gf(t->l), add(multi(pw[cnt(t->l)], t->value), multi(pw[cnt(t->l) + 1], gf(t->r))));
+        t->hr = add(gr(t->r), add(multi(pw[cnt(t->r)], t->value), multi(pw[cnt(t->r) + 1], gr(t->l))));
+    }
+}
+void merge (pitem & t, pitem l, pitem r) {
+    if (!l || !r)
+        t = l ? l : r;
+    else if (l->prior > r->prior)
+        merge (l->r, l->r, r),  t = l;
+    else
+        merge (r->l, l, r->l),  t = r;
+    upd_cnt (t);
+ 
+}
+void split (pitem t, pitem & l, pitem & r, int key, int add = 0) {
+    if (!t)
+        return void( l = r = 0 );
+    int cur_key = add + cnt(t->l);
+    if (key <= cur_key)
+        split (t->l, l, t->l, key, add),  r = t;
+    else
+        split (t->r, t->r, r, key, add + 1 + cnt(t->l)),  l = t;
+    upd_cnt (t);
+}
+ 
+void output (pitem t) {
+    if (!t)  return;
+    output (t->l);
+    cout<<t->value<<" ";
+    output (t->r);
+}
+void solve() {
+    pw[0] = 1;
+    for (int i = 1; i < N; ++i) pw[i] = multi(pw[i - 1], base);
+    ll n, q;
+    cin >> n >> q;
+    string x;
+    cin >> x;
+    pitem root = new item(x[0]-'a');
+    for (int i = 1; i < x.size(); ++i) {
+        merge(root, root, new item(x[i] - 'a'));
+    }
+ 
+    for (int i = 0; i < q; ++i) {
+        ll op;
+        cin >> op;
+        if (op == 1) {
+            ll l, r;
+            cin >> l >> r;
+            l--, r--;
+            pitem s1, s2, s3;
+            split(root, s1, s3, r + 1);
+            split(s1, s1, s2, l);
+            merge(root, s1, s3);
+        } else if (op == 2) {
+            char c;
+            ll p;
+            cin >> c >> p;
+            p--;
+            pitem s1, s2;
+            split(root, s1, s2, p);
+            merge(s1, s1, new item(c - 'a'));
+            merge(root, s1, s2);
+        } else {
+            ll l, r;
+            cin >> l >> r;
+            l--, r--;
+            pitem s1, s2, s3;
+            split(root, s1, s3, r + 1);
+            split(s1, s1, s2, l);
+            if (gf(s2) == gr(s2)) cout << "Yes" << endl;
+            else cout << "No" << endl;
+            merge(root, s1, s2);
+            merge(root, root, s3);
+        }
+    }
+}

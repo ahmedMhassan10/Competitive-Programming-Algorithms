@@ -220,54 +220,141 @@ void func(int index){
 
 
 // Finding the shortest string containing all given strings
-// ?? at time that it takes
 
-
+O(alpha * summtion of stirngs len * 2^k) as k number of strings
+const int mx=26;//len of Alpha
+int totalIndex=1;
 ll k;
+vector<vector<pair<int,int>>>par,dp;
+struct node
+{
+    node * ch[mx];
+    node * fail;
+    int mask=0;
+    int index=0;
+    node()
+    {
+        memset(ch,0,sizeof ch);
+        fail = NULL;
+        index=totalIndex++;
+    }
+}* root;
+
+void init()
+{
+    root = new node();
+}
+
+void insert(string &s , int idx)// insert strings from  set
+{
+    node * cur = root;
+
+    for(int i=0; i<s.size(); i++)
+    {
+        int c = s[i]-'a';
+        if (cur->ch[c] == NULL) cur->ch[c] = new node();
+        cur = cur->ch[c];
+    }
+    cur->mask|=1ll<<idx;
+}
+
+node* get(node *k , int c)
+{
+    node* kk=k;
+    while(kk->ch[c] == NULL)
+        kk = kk->fail;
+    kk = kk->ch[c];
+    return kk;
+}
+
+void buildAho()// o(mx*(sum[size of si]));
+{
+    queue <node*> q;
+    for ( int i = 0  ; i < mx; i++)
+    {
+        if( root->ch[i])
+            q.push(root->ch[i]);
+        else
+            root->ch[i] = new node();
+        root->ch[i]->fail = root;
+    }
+    while(!q.empty())
+    {
+        node* cur = q.front();
+        q.pop();
+        for ( int i = 0 ; i < mx ; i++)
+        {
+            if(cur->ch[i])
+            {
+                node*fail = cur->fail;
+                fail = get(fail,i);
+                cur->ch[i]->fail = fail;
+                q.push(cur->ch[i]);
+
+                cur->ch[i]->mask|=fail->mask;
+            }
+        }
+    }
+}
+
+
 struct edge{
     node* node;
     int mask,len;
 };
 
-
-ll bfs(){
+pair<int,int> bfs(){
     auto cur=root;
     queue<edge>q;
     q.push({cur,0,0});
-    map<pair<node*,int>,int>vis;
-
+    dp.resize(totalIndex+10);
+    par.resize(totalIndex+10);
+    par.assign(par.size(),vector<pair<int,int>>(1<<13,{0,0}));
+    dp.assign(par.size(),vector<pair<int,int>>(1<<13,{-1,-1}));
+    dp[cur->index][0]= make_pair(0ll,0ll);
+    par[cur->index][0]=make_pair(-1ll,-1ll);
     while (q.size()){
-        auto node=q.front().node;
-        ll mask=q.front().mask,len=q.front().len;
+        auto [myNode,mask,len]=q.front();
         q.pop();
-        if(__builtin_popcount(mask)==k){
-            return len;
-        }
-        if(vis[{node,mask}])continue;
         for (int i = 0; i < mx; ++i) {
-            auto temp=node;
-            auto c= get(temp,i);
-            auto maskT=mask;
-            for(auto item:c->pat_idx){
-                maskT=maskT|(1<<item);
+            node* curNode= get(myNode,i);
+            int newMask=mask|curNode->mask;
+            if(dp[curNode->index][newMask].first==-1){
+                dp[curNode->index][newMask]={dp[myNode->index][mask].first+1,mask};
+                q.push({curNode,newMask,dp[curNode->index][mask].first});
+                par[curNode->index][newMask]={myNode->index,i};
+                if(newMask==1){
+                    cout<<"";
+                }
+                if(k==(newMask)){
+                    return make_pair(curNode->index,newMask);
+                }
             }
-            q.push({c,maskT,len+1});
         }
     }
 }
-void func(int index){
-    cin>>k;
+string result="";
+void create_str(int idx,int mask,int ch){
+    while (idx!=-1&&dp[idx][mask].first!=-1){
+        if(ch!=-1)
+            result+=char(ch+'a');
+        auto temp1=par[idx][mask].first,tem2=dp[idx][mask].second,temp3=par[idx][mask].second;
+
+        idx=temp1,mask=tem2,ch=temp3;
+    }
+}
+string shortestSuperstring(vector<string>& words) {
     init();
-    for (int i = 0; i < k; ++i) {
-        string s;cin>>s;
-        insert(s,i);
+    k=(1<<words.size())-1;
+    for (int i = 0; i < words.size(); ++i) {
+        insert(words[i],i);
     }
     buildAho();
-    cout<<bfs();	// get the length 
-			// to get the string its self we need to run BUILD function
-			
-} 
-
+    auto item=bfs();
+    create_str(item.first,item.second,-1);
+    std::reverse(result.begin(), result.end());
+    return result;
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
