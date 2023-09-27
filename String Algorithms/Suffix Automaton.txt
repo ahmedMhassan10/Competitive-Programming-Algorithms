@@ -1,0 +1,453 @@
+//	memory O(N*K) as K is alphabet length
+// 	time O(N)
+// 	minLen(v)=1+len(link[v]) --> end with v
+// 	for node 0 minLen = 0
+
+const int MAXLEN = 1e5 + 5;
+int sz, last;
+struct state {
+    int len, link;
+    map<char, int> next;
+};
+void init(vector<state>& st) {
+    sz = 0;
+    st[0].len = 0;
+    st[0].link = -1;
+    sz++;
+    last = 0;
+}
+void insertChar(char c,vector<state> &st) {
+    int cur = sz++;
+    st[cur].len = st[last].len + 1;
+    int p = last;
+    while (p != -1 && !st[p].next.count(c)) {
+        st[p].next[c] = cur;
+        p = st[p].link;
+    }
+    if (p == -1) {
+        st[cur].link = 0;
+    } else {
+        int q = st[p].next[c];
+        if (st[p].len + 1 == st[q].len) {
+            st[cur].link = q;
+        } else {
+            int clone = sz++;
+            st[clone].len = st[p].len + 1;
+            st[clone].next = st[q].next;
+            st[clone].link = st[q].link;
+            while (p != -1 && st[p].next[c] == q) {
+                st[p].next[c] = clone;
+                p = st[p].link;
+            }
+            st[q].link = st[cur].link = clone;
+        }
+    }
+    last = cur;
+}
+void solve() {
+    string str;cin>>str;
+    vector<state> st(MAXLEN * 2);
+    vector<vector<int>> adj(MAXLEN * 2);
+    init(st);
+    for (int i = 0; i < str.size(); ++i){
+        insertChar(str[i],st);
+    }
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+// search
+
+bool findPattern(string& pat){
+    ll node=0;
+    for (int i = 0; i < pat.size(); ++i) {
+        if(st[node].next.count(pat[i])){
+            node=st[node].next[pat[i]];
+        }else return 0;
+    }
+    return 1;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+
+Number of different substrings
+
+ll get_diff_strings(){
+    ll total = 0;
+    for(int i = 1; i < sz; i++) {
+        total += st[i].len - st[st[i].link].len;
+    }
+    return total;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+Total length of all different substrings
+
+
+ll get_total_length_of_different_substrings(){
+    ll tot = 0;
+    for(int i = 1; i < sz; i++) {
+        ll counter=st[i].len-st[st[i].link].len;
+        total += counter*(st[i].len + st[st[i].link].len+1)/2;
+    }
+    return total;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+Lexicographically k-th substring
+
+
+struct state {
+    int len=0, link=0,count=0,dp=-1;
+    map<char, int> next;
+};
+const int MAXLEN = 1e5+10;
+state st[MAXLEN * 2];
+int sz, last;
+void init() {
+    st[0].len = 0;
+    st[0].count = 0;
+    st[0].link = -1;
+    st[0].dp = -1;
+    st[0].next.clear();
+    sz=0;
+    sz++;
+    last = 0;
+}
+void insertChar(char c) {
+    int cur = sz++;
+    st[cur].len = st[last].len + 1;
+    st[cur].count=1;
+    int p = last;
+    while (p != -1 && !st[p].next.count(c)) {
+        st[p].next[c] = cur;
+        p = st[p].link;
+    }
+    if (p == -1) {
+        st[cur].link = 0;
+    } else {
+        int q = st[p].next[c];
+        if (st[p].len + 1 == st[q].len) {
+            st[cur].link = q;
+        } else {
+            int clone = sz++;
+            st[clone].len = st[p].len + 1;
+            st[clone].next = st[q].next;
+            st[clone].link = st[q].link;
+            while (p != -1 && st[p].next[c] == q) {
+                st[p].next[c] = clone;
+                p = st[p].link;
+            }
+            st[q].link = st[cur].link = clone;
+        }
+    }
+    last = cur;
+}
+vector<vector<int>>g(2*MAXLEN);
+void dfs(int node){
+    for(auto item:g[node]){
+        dfs(item);
+        st[node].count+=st[item].count;
+    }
+}
+void calcDp(int node){
+    st[node].dp=st[node].count;
+    for (auto item:st[node].next) {
+        if(st[item.second].dp==-1)
+            calcDp(item.second);
+        st[node].dp+=st[item.second].dp;
+    }
+}
+void calc_the_counter_for_every_subtree(){
+    for (int i = 1; i < sz; ++i) {
+        g[st[i].link].push_back(i);
+    }
+    dfs(0);
+    calcDp(0);
+}
+void solve(int idx) {
+    init();
+    string str;cin>>str;
+    for (int i = 0; i < str.size(); ++i) {
+        insertChar(str[i]);
+    }
+    ll k;cin>>k;
+    ll n=str.size();
+    if(n*(n+1)/2<k){
+        cout<<"No such line.\n";
+        return;
+    }
+    ll node=0;
+    calc_the_counter_for_every_subtree();
+    while (1){
+        for (auto item:st[node].next) {
+            if (k <= st[item.second].count) {
+                cout<<item.first;
+                return;
+            } else if(st[item.second].dp>=k){
+                cout<<item.first;
+                k-=st[item.second].count;
+                node=item.second;
+                break;
+            }else{
+                k-=st[item.second].dp;
+            }
+        }
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+Number of occurrences
+
+
+Use the count part from the upper code to count the occurances at state |str|
+
+///////////////////////////////////////////////////////////////////////////////
+
+Number of substrings
+
+
+void dfs(int node,vector<state> &st, vector<vector<int>> &adj)
+{
+    for(auto item:adj[node]){
+        dfs(item,st,adj);
+        st[node].count+=st[item].count;
+    }
+}
+int get_the_number_of_substrings(vector<state> &st, vector<vector<int>> &adj)
+{
+    for (int i = 1; i < sz; ++i) {
+        adj[st[i].link].push_back(i);
+    }
+    dfs(0,st,adj);
+    ll res=0;
+    for (int i = 1; i < sz; ++i) {
+        res+=(st[i].len-st[st[i].link].len)*st[i].count;
+    }
+    return res;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+First occurrence position
+
+
+calc --->	fPos(cur)=len(cur)-1
+		fPos(clone)=fPos(q)
+		
+		then the result =	fpos(t)-(str.size())+1
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+
+Shortest non-appearing string
+
+
+
+
+vector<int>dp(2*MAXLEN);
+string resStr;
+void dfs(int node){
+    ll res=OO;
+    for(char i='a';i<='z';i++){
+        if(st[node].next.count(i)){
+            dfs(st[node].next[i]);
+            res=min(res,1+dp[st[node].next[i]]);
+        }else{
+            res=1;
+            break;
+        }
+    }
+    dp[node]=res;
+}
+void build(int node){
+    ll re=dp[node];
+    for(char i='a';i<='z';i++){
+        if(st[node].next.count(i)){
+            if((1+dp[st[node].next[i]])==re)
+            {
+                resStr+=i;
+                build(st[node].next[i]);
+                return;
+            }
+        }else{
+            resStr+=i;
+            return;
+        }
+    }
+}
+void solve(int idx) {
+    init();
+    resStr="";
+    ll sz2;cin>>sz2;
+    string str;cin>>str;
+    for (int i = 0; i < str.size(); ++i) {
+        insertChar(str[i]);
+    }
+    dfs(0);
+    build(0);
+    cout<<resStr<<'\n';
+    for (int i = 0; i < sz; ++i) {
+        st[i].len = 0;
+        st[i].link = -1;
+        st[i].next.clear();
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+
+Longest common substring of two strings
+
+
+string lcs (string S, string T) {
+    init();
+    for (int i = 0; i < S.size(); i++)
+        insertChar(S[i]);
+
+    int v = 0, l = 0, best = 0, bestpos = 0;
+    for (int i = 0; i < T.size(); i++) {
+        while (v && !st[v].next.count(T[i])) {
+            v = st[v].link ;
+            l = st[v].len;
+        }
+        if (st[v].next.count(T[i])) {
+            v = st [v].next[T[i]];
+            l++;
+        }
+        if (l > best) {
+            best = l;
+            bestpos = i;
+        }
+    }
+    return T.substr(bestpos - best + 1, best);
+} 
+
+///////////////////////////////////////////////////////////////////////////////
+
+
+Build Suffix Automaton on more than string to process on them together
+
+https://codeforces.com/contest/452/problem/E
+
+
+ll add ( ll a , ll b, ll mod)
+{
+    return (a + b) % mod;
+}
+ll sub ( ll a , ll b, ll mod)
+{
+    return (a - b +mod) % mod;
+}
+ll mul ( ll a , ll b, ll mod)
+{
+    return (1LL * a * b) % mod;
+}
+
+const int MAXLEN = 3e5 + 5;
+int sz, last;
+tuple<int,int,int> merge(tuple<int,int,int>&vec1,tuple<int,int,int>&vec2){
+    tuple<int,int,int> vec=make_tuple(add(get<0>(vec1),get<0>(vec2),mod),add(get<1>(vec1),get<1>(vec2),mod),add(get<2>(vec1),get<2>(vec2),mod));
+    return vec;
+}
+struct state {
+    int len, link;
+    tuple<int,int,int> count = make_tuple(0,0,0);
+    map<char, int> next;
+};
+void init(vector<state>& st) {
+    sz = 0;
+    st[0].len = 0;
+    st[0].link = -1;
+    st[0].count = make_tuple(0,0,0);
+    sz++;
+    last = 0;
+}
+void insertChar(char c,vector<state> &st,tuple<int,int,int>vec) {
+    int cur = sz++;
+    st[cur].count = vec;
+    st[cur].len = st[last].len + 1;
+    int p = last;
+    while (p != -1 && !st[p].next.count(c)) {
+        st[p].next[c] = cur;
+        p = st[p].link;
+    }
+    if (p == -1) {
+        st[cur].link = 0;
+    } else {
+        int q = st[p].next[c];
+        if (st[p].len + 1 == st[q].len) {
+            st[cur].link = q;
+        } else {
+            int clone = sz++;
+            st[clone].len = st[p].len + 1;
+            st[clone].next = st[q].next;
+            st[clone].link = st[q].link;
+            while (p != -1 && st[p].next[c] == q) {
+                st[p].next[c] = clone;
+                p = st[p].link;
+            }
+            st[q].link = st[cur].link = clone;
+        }
+    }
+    last = cur;
+}
+void dfs(int node,vector<state> &st, vector<vector<int>> &adj){
+    for(auto item:adj[node]){
+        dfs(item,st,adj);
+        st[node].count= merge(st[item].count,st[node].count);
+    }
+}
+void get_the_number_of_substrings(vector<state> &st, vector<vector<int>> &adj){
+    for (int i = 1; i < sz; ++i) {
+        adj[st[i].link].push_back(i);
+    }
+    dfs(0,st,adj);
+}
+
+void solve() {
+    string str1,str2,str3;cin>>str1>>str2>>str3;
+    vector<state> st(MAXLEN * 2);
+    vector<vector<int>> adj(MAXLEN * 2);
+
+    init(st);
+    for (int i = 0; i < str1.size(); ++i){
+        insertChar(str1[i],st,  make_tuple(1,0,0));
+    }
+    insertChar('$',st, make_tuple(0,0,0));
+
+    for (int i = 0; i < str2.size(); ++i){
+        insertChar(str2[i],st,  make_tuple(0,1,0));
+    }
+    insertChar('#',st, make_tuple(0,0,0));
+    for (int i = 0; i < str3.size(); ++i){
+        insertChar(str3[i],st,  make_tuple(0,0,1));
+    }
+    ll length=min({str1.size(),str2.size(),str3.size()});
+    get_the_number_of_substrings(st,adj);
+    vector<int>res(sz+10);
+    for (int i = 1; i < sz; ++i) {
+        ll start=st[st[i].link].len+1,en=st[i].len;
+        ll val= mul(get<0>(st[i].count), mul(get<1>(st[i].count),get<2>(st[i].count),mod),mod);
+        res[start]= add(res[start],val,mod);
+        res[en+1]= sub(res[en+1],val,mod);
+    }
+    for (int i = 1; i < sz; ++i) {
+        res[i]= add(res[i],res[i-1],mod);
+    }
+    for (int i = 1; i <= length ; ++i) {
+        cout<<res[i]<<' ';
+    }
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+

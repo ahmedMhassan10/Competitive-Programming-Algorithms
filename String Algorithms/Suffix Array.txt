@@ -1,66 +1,9 @@
-//////////////////////////////////
-
-// cp Algo imp
-
-void sort_cyclic_shifts(string const& s,vector<int>&p) {
-    int n = s.size();
-    const int alphabet = 256;
-    vector<int>  c(n), cnt(max(alphabet, n), 0);
-    for (int i = 0; i < n; i++)
-        cnt[s[i]]++;
-    for (int i = 1; i < alphabet; i++)
-        cnt[i] += cnt[i-1];
-    for (int i = 0; i < n; i++)
-        p[--cnt[s[i]]] = i;
-    c[p[0]] = 0;
-    int classes = 1;
-    for (int i = 1; i < n; i++) {
-        if (s[p[i]] != s[p[i-1]])
-            classes++;
-        c[p[i]] = classes - 1;
-    }
-    vector<int> pn(n), cn(n);
-    for (int h = 0; (1 << h) < n; ++h) {
-        for (int i = 0; i < n; i++) {
-            pn[i] = p[i] - (1 << h);
-            if (pn[i] < 0)
-                pn[i] += n;
-        }
-        fill(cnt.begin(), cnt.begin() + classes, 0);
-        for (int i = 0; i < n; i++)
-            cnt[c[pn[i]]]++;
-        for (int i = 1; i < classes; i++)
-            cnt[i] += cnt[i-1];
-        for (int i = n-1; i >= 0; i--)
-            p[--cnt[c[pn[i]]]] = pn[i];
-        cn[p[0]] = 0;
-        classes = 1;
-        for (int i = 1; i < n; i++) {
-            pair<int, int> cur = {c[p[i]], c[(p[i] + (1 << h)) % n]};
-            pair<int, int> prev = {c[p[i-1]], c[(p[i-1] + (1 << h)) % n]};
-            if (cur != prev)
-                ++classes;
-            cn[p[i]] = classes - 1;
-        }
-        c.swap(cn);
-    }
-}
-
-vector<int> suffix_array_construction(string& s) {  // o(n log(n)^2)
-    s += "$";
-    vector<int> sorted_shifts=vector<int>(s.size());
-    sort_cyclic_shifts(s,sorted_shifts);
-    sorted_shifts.erase(sorted_shifts.begin());
-    return sorted_shifts;
-}
-
 ////////////////////////////////////////////////
 
 
 // EDU imp 
 
 void count_sort(vector<int>&p,vector<int>&c){
-
     int n=p.size();
     vector<int>cnt(n);
     for (auto x:c) {
@@ -595,3 +538,59 @@ void func(int index){
         total+=len2;
     }
 }
+
+
+////////////////////////////////////////////////////////////////////
+
+Refrain Problem
+
+https://codeforces.com/edu/course/2/lesson/2/5/practice/contest/269656/problem/E
+
+
+    auto lcp= lcp_construction(s,p);
+    ll num=lcp.size();
+    int a[num],  mnl[num], mnr[num];
+    for(int i = 0; i < num; i++)
+       a[i]=lcp[i];
+    stack<int>  s2,  s4;
+    for(int i = 0; i < num; i++) {
+        while(!s2.empty() && a[s2.top()] >= a[i])
+            s2.pop();
+        while(!s4.empty() && a[s4.top()] >= a[num - 1 - i])
+            s4.pop();
+        mnl[i] = s2.empty() ? -1: i - s2.top();//distance
+        mnr[num - 1 - i] = s4.empty() ? -1: s4.top() - (num - 1 - i);//distance
+        s2.push(i);
+        s4.push(num - 1 - i);
+    }
+    for (int i = 0; i < num; ++i) {
+        if(mnl[i]==-1){
+            mnl[i]=i+1;
+        }
+        if(mnr[i]==-1){
+            mnr[i]=num-i;
+        }
+    }
+    ll maxi=n-1,start=0,len = n-1;
+ 
+    for (int i = 0; i < num; ++i) {
+        if(lcp[i]){
+            ll prev=mnl[i],next=mnr[i];
+            if(prev)prev--;
+            if(next)next--;
+            ll len2=prev+next+2;
+            ll re=len2*lcp[i];
+            if(re>maxi){
+                maxi=re;
+                start=p[i];
+                len=lcp[i];
+            }
+        }
+    }
+    cout<<maxi<<endl;
+    cout<<len<<endl;
+    for (int i = start; i <start+len ; ++i) {
+        if(s[i]<='9')
+            cout<<s[i]<<' ';
+        else cout<<"10 ";
+    }
