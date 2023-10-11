@@ -1,3 +1,92 @@
+// integer Based implementation
+
+struct AhoCorasick
+{
+    int pi[N];
+    int states = 0;
+    int trie[N][26], dp[N][26];
+    vector<vector<int>> patterns;
+ 
+    AhoCorasick()
+    {}
+ 
+    AhoCorasick(vector<string> &p, int n, int m = 26)
+    {
+        /*
+         * MAKE SURE THAT THE STRINGS IN P ARE UNIQUE
+         * N is the summation of sizes of p
+         * M is the number of used alphabet
+        */
+ 
+        for(int i = 0; i < N; i++)
+        {
+            pi[i] = -1;
+            for(int j = 0; j < 26; j++)
+                trie[i][j] = dp[i][j] = -1;
+        }
+        patterns = vector<vector<int>>(n + 1);
+ 
+        for(int i = 0; i < p.size(); i++)
+            insert(p[i], i);
+        build();
+    }
+ 
+    void insert(string &s, int idx)
+    {
+        int cur = 0;
+        for(auto &it: s)
+        {
+            if(trie[cur][it - 'a'] == -1)
+                trie[cur][it - 'a'] = ++states;
+            cur = trie[cur][it - 'a'];
+        }
+        patterns[cur].push_back(idx);
+    }
+ 
+    void build()
+    {
+        queue<int> q;
+        for(int i = 0; i < 26; i++)
+        {
+            if(trie[0][i] != -1)
+                pi[trie[0][i]] = 0, q.push(trie[0][i]);
+            else
+                trie[0][i] = 0;
+        }
+ 
+        while(q.size())
+        {
+            int cur = q.front();
+            q.pop();
+            for(int i = 0; i < 26; i++)
+            {
+                if(trie[cur][i] == -1)
+                    continue;
+ 
+                int f = pi[cur];
+                while(trie[f][i] == -1)
+                    f = pi[f];
+ 
+                f = trie[f][i];
+                pi[trie[cur][i]] = f;
+                patterns[trie[cur][i]].insert(patterns[trie[cur][i]].end(), patterns[f].begin(), patterns[f].end());
+                q.push(trie[cur][i]);
+            }
+        }
+    }
+ 
+    int nextState(int trieNode, char nxt)
+    {
+        int &ret = dp[trieNode][nxt - 'a'];
+        if(~ret)
+            return ret;
+        int cur = trieNode;
+        if(trie[cur][nxt - 'a'] == -1)
+            return ret = nextState(pi[cur], nxt);
+ 
+        return ret = trie[cur][nxt - 'a'];
+    }
+};
 //////////////////////////////////////////////////////////////////////////////////////
 
 

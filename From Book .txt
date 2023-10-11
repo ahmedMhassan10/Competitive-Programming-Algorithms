@@ -1,4 +1,20 @@
-
+// num % A = B values from 1 to C
+int countValues(int A, int B, int C)
+{
+    if (B >= A)
+        return 0;
+    if (B == 0)
+        return C/A;
+    int ans = C / A;
+ 
+    if (ans * A + B <= C)
+        ans++;
+    return ans;
+}
+int f(int l, int r, int m, int n)
+{
+    return countValues(n, m, r) - countValues(n, m, l-1);
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 maximum subarray if there is negative 

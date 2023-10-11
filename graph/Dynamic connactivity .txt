@@ -95,7 +95,6 @@ void func(int index) {
     ll n,m;cin>>n>>m;// call update for m
     dsu.init(n);
     map<pair<int,int>,pair<int,int>>ma;
-
     for (int i = 1; i <= m ; ++i) {
         char ch;cin>>ch;
         ll u,v;
