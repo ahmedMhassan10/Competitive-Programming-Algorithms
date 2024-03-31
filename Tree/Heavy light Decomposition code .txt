@@ -123,3 +123,305 @@ void func(int index) {
         }
     }
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+// solve hld with polynomial problem
+
+
+
+#include <bits/stdc++.h>
+
+using namespace std;
+#define ll long long
+#define int long long
+#define X first
+#define Y second
+#define clr(v, d)            memset(v, d, sizeof(v))
+#define vi vector<int>
+const ll OO = 3e18 + 10, mod = 1e9 + 7, mod2 = 1e9 + 9, N = 2e5 + 5, M = 25, MOD = 998244353, minOO = LLONG_MIN;
+
+int divC(int a, int b) {
+    return a / b + (a % b != 0);
+}
+
+int gcd(int a, int b) { return ((b == 0) ? a : gcd(b, a % b)); }
+
+int lcm(int a, int b) { return a / gcd(a, b) * b; }
+
+vector<int> parent, depth, heavy, head, pos;
+int cur_pos, n, ancestor[N][M], lvl[N];
+
+class LazySegTree {
+public:
+    vector<ll> seg;
+    vector<pair<ll, ll>> lazy;
+    vector<pair<ll, ll>> lazy2;
+
+    LazySegTree() {
+        seg.assign(4 * n, 0);
+        lazy.assign(4 * n, {0, 0});
+        lazy2.assign(4 * n, {0, 0});
+    }
+
+    void propagate1(int st, int en, int p) {
+        if (lazy[p].X == 0) return;
+        auto a = lazy[p].X;
+        auto d = lazy[p].Y;
+        auto len = en - st + 1;
+        seg[p] += 1LL * (a + a + 1LL * (len - 1) * d) * len / 2;
+        if (st != en) {
+            lazy[2 * p].X += lazy[p].X;
+            lazy[2 * p + 1].X += lazy[p].X + 1LL * lazy[p].Y * ((en + st) / 2 - st + 1);
+            lazy[2 * p].Y += lazy[p].Y;
+            lazy[2 * p + 1].Y += lazy[p].Y;
+        }
+        lazy[p] = {0, 0};
+    }
+
+    void propagate2(int st, int en, int p) {
+        if (lazy2[p].X == 0) return;
+        auto a = lazy2[p].X;
+        auto d = lazy2[p].Y;
+        auto len = en - st + 1;
+        seg[p] += 1LL * (a + a + 1LL * (len - 1) * d) * len / 2;
+        if (st != en) {
+            lazy2[2 * p + 1].X += lazy2[p].X;
+            lazy2[2 * p].X += lazy2[p].X + 1LL * lazy2[p].Y * (len / 2);
+            lazy2[2 * p].Y += lazy2[p].Y;
+            lazy2[2 * p + 1].Y += lazy2[p].Y;
+        }
+        lazy2[p] = {0, 0};
+    }
+
+    ll merge(ll L, ll R) {
+        return L + R;
+    }
+
+    void upd(int l, int r, int val, int st = 1, int en = n, int p = 1) {
+        propagate1(st, en, p);
+        propagate2(st, en, p);
+        if (r < st || l > en) return;
+        if (st >= l && en <= r) {
+            lazy[p].X += val;
+            lazy[p].Y++;
+            propagate1(st, en, p);
+            propagate2(st, en, p);
+            return;
+        }
+        int mi = (st + en) / 2;
+        upd(l, r, val, st, mi, p * 2);
+        upd(l, r, val + max(0ll, (mi - max(l, st) + 1)), mi + 1, en, p * 2 + 1);
+        seg[p] = merge(seg[2 * p], seg[2 * p + 1]);
+    }
+
+    void upd2(int l, int r, int val, int st = 1, int en = n, int p = 1) {
+        propagate1(st, en, p);
+        propagate2(st, en, p);
+        if (r < st || l > en) return;
+        if (st >= l && en <= r) {
+            lazy2[p].X += val;
+            lazy2[p].Y++;
+            propagate1(st, en, p);
+            propagate2(st, en, p);
+            return;
+        }
+        int mi = (st + en) / 2;
+        int zz = max(0ll, min(en, r) - mi);
+        upd2(l, r, val + zz, st, mi, p * 2);
+        upd2(l, r, val, mi + 1, en, p * 2 + 1);
+        seg[p] = merge(seg[2 * p], seg[2 * p + 1]);
+    }
+
+    ll get(int l, int r, int st = 1, int en = n, int p = 1) {
+        propagate1(st, en, p);
+        propagate2(st, en, p);
+        if (r < st || l > en) return 0;
+        if (st >= l && en <= r) {
+            return seg[p];
+        }
+        int mi = (st + en) / 2;
+        return merge(get(l, r, st, mi, p * 2), get(l, r, mi + 1, en, p * 2 + 1));
+    }
+} seg;
+
+//////////////////////////////////////////////////////////////////////////////////////
+
+int dfs(int v, vector<vector<int>>  &adj) {
+    int size = 1;
+    int max_c_size = 0;
+    for (int c: adj[v]) {
+        if (c != parent[v]) {
+            parent[c] = v, depth[c] = depth[v] + 1;
+            int c_size = dfs(c, adj);
+            size += c_size;
+            if (c_size > max_c_size)
+                max_c_size = c_size, heavy[v] = c;
+        }
+    }
+    return size;
+}
+
+void decompose(int v, int h, vector<vector<int>>  &adj) {
+    head[v] = h, pos[v] = cur_pos++;
+    if (heavy[v] != -1)
+        decompose(heavy[v], h, adj);
+    for (int c: adj[v]) {
+        if (c != parent[v] && c != heavy[v])
+            decompose(c, c, adj);
+    }
+}
+
+
+void dfs2(int node, int par, vector<vector<int>> &g) {
+    lvl[node] = lvl[par] + 1;
+    ancestor[node][0] = par;
+    for (int j = 1; j < M; j++) {
+        int p = ancestor[node][j - 1];
+        ancestor[node][j] = ancestor[p][j - 1];
+    }
+    for (auto ch: g[node]) {
+        if (ch == par)
+            continue;
+        dfs2(ch, node, g);
+    }
+}
+
+
+int findKthAncestor(int u, int k)        //return zero if k > depth --> call dfs(1,0) in main
+{
+    for (int j = M - 1; j >= 0; j--)
+        if (k & (1 << j))
+            u = ancestor[u][j];
+    return u;
+}
+
+
+int getLCA(int u, int v) {
+    if (lvl[u] < lvl[v])
+        swap(u, v);
+    u = findKthAncestor(u, lvl[u] - lvl[v]);
+    if (u == v)
+        return u;
+    for (int i = M - 1; i >= 0; i--) {
+        if (ancestor[u][i] == ancestor[v][i])
+            continue;
+        u = ancestor[u][i];
+        v = ancestor[v][i];
+    }
+    return ancestor[u][0];
+}
+
+ll getDist(ll u, ll v) {
+    ll lca = getLCA(u, v);
+    return lvl[u] + lvl[v] - 2 * lvl[lca];
+}
+
+void init(vector<vector<int>>  &adj) {
+    parent = vector<int>(n);
+    depth = vector<int>(n);
+    heavy = vector<int>(n, -1);
+    head = vector<int>(n);
+    pos = vector<int>(n);
+    cur_pos = 1;
+    dfs(1, adj);
+    dfs2(1, 0, adj);
+    decompose(1, 1, adj);
+}
+
+int hldQuery(int a, int b) {
+    int res = 0;
+    for (; head[a] != head[b]; b = parent[head[b]]) {
+        if (depth[head[a]] > depth[head[b]])
+            swap(a, b);
+        res += seg.get(pos[head[b]], pos[b]);
+    }
+    if (depth[a] > depth[b])
+        swap(a, b);
+    res += seg.get(pos[a], pos[b]);
+    return res;
+}
+
+void solve_up(int a, int b) {
+    ll val = 1;
+    for (; head[a] != head[b]; b = parent[head[b]]) {
+        if (depth[head[a]] > depth[head[b]])
+            swap(a, b);
+        int temp = head[b];
+        seg.upd2(pos[head[b]], pos[b], val);
+        val += getDist(head[b], b) + 1;
+    }
+    if (depth[a] > depth[b])
+        swap(a, b);
+    seg.upd2(pos[a], pos[b], val);
+}
+
+void solve_down(int a, int b, int val) {
+    val++;
+    for (; head[a] != head[b]; b = parent[head[b]]) {
+        if (depth[head[a]] > depth[head[b]])
+            swap(a, b);
+        val -= getDist(head[b], b);
+        seg.upd(pos[head[b]], pos[b], val);
+        val--;
+    }
+    if (depth[a] > depth[b])
+        swap(a, b);
+    val -= getDist(a, b);
+    seg.upd(pos[a], pos[b], val);
+}
+
+void solve(int index) {
+    cin >> n;
+    vector<vector<int>> adj(n + 1);
+    for (int i = 0; i < n - 1; i++) {
+        ll u, v;
+        cin >> u >> v;
+        adj[u].push_back(v);
+        adj[v].push_back(u);
+    }
+    n++;
+    init(adj);
+    LazySegTree seg2;
+    seg = seg2;
+    ll q;
+    cin >> q;
+    while (q--) {
+        ll t;
+        cin >> t;
+        ll u, v;
+        cin >> u >> v;
+        if (t == 1) {
+            ll lca = getLCA(u, v);
+            if (lca == u || lca == v) {
+                if (lvl[u] > lvl[v]) {
+                    solve_up(v, u);
+                } else {
+                    solve_down(u, v, getDist(u, v));
+                }
+            } else {
+                ll dist = getDist(lca, u);
+                ll kThPar = findKthAncestor(u, dist - 1);
+                solve_up(kThPar, u);
+                solve_down(lca, v, getDist(u, v));
+            }
+        } else {
+            cout << hldQuery(u, v) << endl;
+        }
+    }
+}
+
+signed main() {
+//    freopen("spooky_splits_validation_input.txt","rt",stdin);
+//    freopen("output.txt","wt",stdout);
+    ios_base::sync_with_stdio(false);
+    cin.tie(nullptr);
+    cout.tie(nullptr);
+    ll t = 1;
+//    cin >> t;
+    for (int i = 1; i <= t; i++)
+        solve(i);
+
+    return 0;
+}

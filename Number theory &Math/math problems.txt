@@ -113,3 +113,10 @@ to create array that handle this condition
 
 4)	A(i,j)=a(i^2)+b*i*j+c*(j^2)+d*i+e*j+f (mod n) for every a,b,c,d,e,f that (mod n)!=0
 
+//////////////////////////////////////////////////////////////////////////////
+
+
+
+sum(i*ncr(x,i))=x*(2^(x-1))
+
+

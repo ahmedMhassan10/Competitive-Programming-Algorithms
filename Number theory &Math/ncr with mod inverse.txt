@@ -25,6 +25,8 @@ ll fop( ll b , ll p, ll mod)
 ll  modInverse(ll  n, ll mod){return fop(n, mod - 2, mod);}
 ll nCr( ll n , ll r, ll mod)
 {
+    if(n<r)
+        return 0;
     return mul(fact[n],mul(inv[n-r],inv[r],mod),mod);
 }
 ll nPr( ll n , ll r, ll mod)

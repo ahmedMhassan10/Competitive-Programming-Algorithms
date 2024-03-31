@@ -1,0 +1,51 @@
+// handle queries using Sqrt
+
+    ll n;
+    cin >> n;
+    ll q;
+    cin >> q;
+    vector<ll> a(n, 0);
+    ll sqrtLen = sqrt(n) + 1;
+    vector<ll> b(sqrtLen), lazy(sqrtLen);
+    for (int i = 0; i < n; i++) {
+        cin >> a[i];
+        b[i / sqrtLen] += a[i];
+    }
+    while (q--) {
+        ll type;
+        cin >> type;
+        ll l, r;
+        cin >> l >> r;
+        l--, r--;
+        if (type == 0) {    // addition update
+            ll add;
+            cin >> add;
+            int lBlock = l / sqrtLen, rBlock = r / sqrtLen;
+            if (lBlock == rBlock)
+                for (int i = l; i <= r; ++i)
+                    a[i] += add, b[lBlock] += add;
+            else {
+                for (int i = l, end = (lBlock + 1) * sqrtLen - 1; i <= end; ++i)
+                    a[i] += add, b[lBlock] += add;
+                for (int i = lBlock + 1; i <= rBlock - 1; ++i)
+                    lazy[i] += add, b[i] += add * sqrtLen;
+                for (int i = rBlock * sqrtLen; i <= r; ++i)
+                    a[i] += add, b[rBlock] += add;
+            }
+        } else {        // range sum query
+            int sum = 0;
+            int lBlock = l / sqrtLen, rBlock = r / sqrtLen;
+            if (lBlock == rBlock)
+                for (int i = l; i <= r; ++i)
+                    sum += a[i] + lazy[lBlock];
+            else {
+                for (int i = l, end = (lBlock + 1) * sqrtLen - 1; i <= end; ++i)
+                    sum += a[i] + lazy[lBlock];
+                for (int i = lBlock + 1; i <= rBlock - 1; ++i)
+                    sum += b[i];
+                for (int i = rBlock * sqrtLen; i <= r; ++i)
+                    sum += a[i] + lazy[rBlock];
+            }
+            cout << sum << "\n";
+        }
+    }

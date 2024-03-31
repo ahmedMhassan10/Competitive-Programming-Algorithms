@@ -31,7 +31,11 @@ void tarjan(int node) {
         }
     }
 }
-
+void init(){
+    ndfn = 0;
+    comps.clear();
+    adjList.clear();
+}
 
 void scc() {
     int n = (adjList.size());

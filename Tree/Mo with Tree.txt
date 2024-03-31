@@ -1,0 +1,354 @@
+//values on Edges
+
+//https://codeforces.com/gym/100962/attachments/download/4255/20152016-petrozavodsk-winter-training-camp-moscow-su-trinity-contest-en.pdf
+
+#include <bits/stdc++.h>
+
+using namespace std;
+#define ll long long
+#define int long long
+#define clr(v, d)            memset(v, d, sizeof(v))
+#define vi vector<int>
+const ll OO = 3e18 + 10, mod = 1e9 + 7, mod2 = 1e9 + 9, N = 1e5 + 5, M = 25, MOD = 998244353, minOO = LLONG_MIN;
+
+int divC(int a, int b) {
+    return a / b + (a % b != 0);
+}
+
+int gcd(int a, int b) { return ((b == 0) ? a : gcd(b, a % b)); }
+
+int lcm(int a, int b) { return a / gcd(a, b) * b; }
+
+const ll NN = 1e5 + 5, MM = 1e6 + 5;
+int frq[MM], sz = 500;
+int st[N], en[N], val[N];
+int ancestor[N][M], lvl[N];
+int vis[N];
+int block[N];
+vector<pair<int, int> > g[N];
+vector<int> euler;
+struct query {
+    int l, r, idx;
+};
+
+bool cmp(query &a, query &b) {
+    if (a.l / sz != b.l / sz)
+        return a.l / sz < b.l / sz;
+    return a.r < b.r;
+}
+
+void add(int x) {
+    if (frq[x] == 0) {
+        block[x / sz]++;
+    }
+    frq[x]++;
+}
+
+void remove(int x) {
+    frq[x]--;
+    if (frq[x] == 0) {
+        block[x / sz]--;
+    }
+}
+void update(int node) {
+    node = euler[node];
+    if (vis[node]) {
+        remove(val[node]);
+    } else {
+        add(val[node]);
+    }
+    vis[node] ^= 1;
+}
+
+void dfs(int node, int par) {
+    st[node] = euler.size();
+    lvl[node] = lvl[par] + 1;
+    ancestor[node][0] = par;
+    euler.push_back(node);
+    for (int j = 1; j < M; j++) {
+        int p = ancestor[node][j - 1];
+        ancestor[node][j] = ancestor[p][j - 1];
+    }
+    for (auto [ch, w]: g[node]) {
+        if (ch == par)
+            continue;
+        dfs(ch, node);
+        val[ch] = w;
+    }
+    en[node] = euler.size();
+    euler.push_back(node);
+}
+
+
+int findKthAncestor(int u, int k)        //return zero if k > depth --> call dfs(1,0) in main
+{
+    for (int j = M - 1; j >= 0; j--)
+        if (k & (1 << j))
+            u = ancestor[u][j];
+    return u;
+}
+
+
+int getLCA(int u, int v) {
+    if (lvl[u] < lvl[v])
+        swap(u, v);
+    u = findKthAncestor(u, lvl[u] - lvl[v]);
+    if (u == v)
+        return u;
+    for (int i = M - 1; i >= 0; i--) {
+        if (ancestor[u][i] == ancestor[v][i])
+            continue;
+        u = ancestor[u][i];
+        v = ancestor[v][i];
+    }
+    return ancestor[u][0];
+}
+
+
+void solve(int index) {
+    int n, q;
+    cin >> n >> q;
+    // sz = (int) sqrt(n) + 1; جرب مرة كدة ومرة ب  root(NN);
+    for (int i = 0; i < n - 1; ++i) {
+        ll u, v, w;
+        cin >> u >> v >> w;
+        w=min(w,NN-1); // to avoid overflow
+        g[u].push_back({v, w});
+        g[v].push_back({u, w});
+    }
+    dfs(1, 0);
+    val[1] = 3 * n;
+    vector<query> v(q);
+    for (int i = 0; i < q; ++i) {
+        cin >> v[i].l >> v[i].r;
+        v[i].idx = i;
+        int lca = getLCA(v[i].l, v[i].r);
+        if (st[v[i].l] > st[v[i].r])
+            swap(v[i].l, v[i].r);
+        if (lca == v[i].l)
+            v[i].l = st[v[i].l]+1 , v[i].r = st[v[i].r];
+        else v[i].l = en[v[i].l], v[i].r = st[v[i].r];
+    }
+    sort(v.begin(), v.end(), cmp);
+    vector<ll> ans(q);
+    int l = 0, r = -1;
+    for (auto x: v) {
+
+        while (l > x.l)update(--l);
+        while (r < x.r)update(++r);
+        while (l < x.l)update(l++);
+        while (r > x.r)update(r--);
+        for (int i = 0;; ++i) {
+            if (block[i] == sz) {
+                continue;
+            }
+            for (int mex = i * sz;; mex++) {
+                if (frq[mex] == 0) {
+                    ans[x.idx] = mex;
+                    break;
+                }
+            }
+            break;
+        }
+    }
+    for (int i = 0; i < q; ++i) {
+        cout << ans[i] << endl;
+    }
+}
+
+signed main() {
+//    freopen("spooky_splits_validation_input.txt","rt",stdin);
+//    freopen("output.txt","wt",stdout);
+    ios_base::sync_with_stdio(false);
+    cin.tie(nullptr);
+    cout.tie(nullptr);
+    ll t = 1;
+//    cin >> t;
+    for (int i = 1; i <= t; i++)
+        solve(i);
+
+    return 0;
+}
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////////
+
+//values on Nodes
+
+//https://vjudge.net/problem/Gym-443235E
+
+
+#include <bits/stdc++.h>
+
+using namespace std;
+#define ll long long
+//#define int long long
+#define clr(v, d)            memset(v, d, sizeof(v))
+#define vi vector<int>
+const ll OO = 3e18 + 10, mod = 1e9 + 7, mod2 = 1e9 + 9, N = 1e5 + 5, M = 25, MOD = 998244353, minOO = LLONG_MIN;
+
+int divC(int a, int b) {
+    return a / b + (a % b != 0);
+}
+
+int gcd(int a, int b) { return ((b == 0) ? a : gcd(b, a % b)); }
+
+int lcm(int a, int b) { return a / gcd(a, b) * b; }
+
+int frq[N], sz = 500;
+int st[N], en[N], val[N], timer, euler[10 * N];
+int ancestor[N][M], lvl[N];
+int vis[N];
+vector<int> g[N];
+
+struct query {
+    int l, r, idx, lc;
+
+    bool operator<(const query &a) {
+        if (l / sz != a.l / sz)
+            return l / sz < a.l / sz;
+        return l / sz % 2 ? r > a.r : r < a.r;
+    }
+};
+
+bool cmp(query &a, query &b) {
+    if (a.l / sz != b.l / sz)
+        return a.l / sz < b.l / sz;
+    return a.l / sz % 2 ? a.r > b.r : a.r < b.r;
+}
+
+int res = 0;
+
+void add(int x) {
+    frq[x]++;
+    while (frq[res] != 0) {
+        res++;
+    }
+}
+
+void remove(int x) {
+    frq[x]--;
+    if (frq[x] == 0 && x < res)
+        res = x;
+}
+
+void update(int node) {
+    node = euler[node];
+    if (val[node] > N)
+        return;
+    if (vis[node]) {
+        remove(val[node]);
+    } else {
+        add(val[node]);
+    }
+    vis[node] ^= 1;
+}
+
+void dfs(int node, int par) {
+    st[node] = timer;
+    lvl[node] = lvl[par] + 1;
+    ancestor[node][0] = par;
+    euler[timer++] = node;
+    for (int j = 1; j < M; j++) {
+        int p = ancestor[node][j - 1];
+        ancestor[node][j] = ancestor[p][j - 1];
+    }
+    for (auto ch: g[node]) {
+        if (ch == par)
+            continue;
+        dfs(ch, node);
+    }
+    en[node] = timer;
+    euler[timer++] = node;
+}
+
+
+int findKthAncestor(int u, int k)        //return zero if k > depth --> call dfs(1,0) in main
+{
+    for (int j = M - 1; j >= 0; j--)
+        if (k & (1 << j))
+            u = ancestor[u][j];
+    return u;
+}
+
+
+int getLCA(int u, int v) {
+    if (lvl[u] < lvl[v])
+        swap(u, v);
+    u = findKthAncestor(u, lvl[u] - lvl[v]);
+    if (u == v)
+        return u;
+    for (int i = M - 1; i >= 0; i--) {
+        if (ancestor[u][i] == ancestor[v][i])
+            continue;
+        u = ancestor[u][i];
+        v = ancestor[v][i];
+    }
+    return ancestor[u][0];
+}
+
+
+void solve(int index) {
+    int n, q;
+    cin >> n >> q;
+    for (int i = 1; i <= n; ++i) {
+        cin >> val[i];//one based
+        val[i]--;
+    }
+    for (int i = 2; i <= n; ++i) {
+        ll u = i, v;
+        cin >> v;
+        g[u].push_back(v);
+        g[v].push_back(u);
+    }
+    dfs(1, 0);
+    sz = (int) sqrt(timer) + 1;
+    vector<query> v(q);
+    for (int i = 0; i < q; ++i) {
+        ll u, vv;
+        cin >> u >> vv;
+        int lca = getLCA(u, vv);
+        if (st[u] > st[vv])
+            swap(u, vv);
+        if (lca == u)
+            u = st[u], vv = st[vv];
+        else u = en[u], vv = st[vv];
+        v[i] = {u, vv, i, lca};
+    }
+    sort(v.begin(), v.end());
+    vector<ll> ans(q);
+    int l = v[0].l, r = v[0].l - 1;
+    for (auto x: v) {
+        while (l > x.l)update(--l);
+        while (r < x.r)update(++r);
+        while (l < x.l)update(l++);
+        while (r > x.r)update(r--);
+        int lc = x.lc;
+        ll u = euler[l], vv = euler[r];
+        if (lc != u && lc != vv)
+            update(st[lc]);
+        ans[x.idx] = res;
+        if (lc != u && lc != vv)
+            update(st[lc]);
+    }
+    for (int i = 0; i < q; ++i) {
+        cout << ans[i] + 1 << endl;
+    }
+}
+
+signed main() {
+//    freopen("spooky_splits_validation_input.txt","rt",stdin);
+//    freopen("output.txt","wt",stdout);
+    ios_base::sync_with_stdio(false);
+    cin.tie(nullptr);
+    cout.tie(nullptr);
+    ll t = 1;
+//    cin >> t;
+    for (int i = 1; i <= t; i++)
+        solve(i);
+
+    return 0;
+}
