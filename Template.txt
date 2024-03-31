@@ -9,6 +9,8 @@ using namespace __gnu_pbds;
 #define ld long double
 #define double long double
 
+mt19937_64 rnd(time(NULL));
+
 typedef tree< pair<int,int>, null_type, less<pair<int,int>>, rb_tree_tag, tree_order_statistics_node_update> ordered_set;
 #define setP(item) cout<<fixed<<setprecision(item);
 int ceilSqrt(int a){
@@ -17,8 +19,14 @@ int ceilSqrt(int a){
 int  divC(int a,int b){
     return a/b+(a%b!=0);
 }
+
+mt19937 rng(chrono::steady_clock::now().time_since_epoch().count());
+ll rand(ll l, ll r) {
+    return uniform_int_distribution<ll>(l, r)(rng);
+}
+
 int gcd(int a, int b) { return ((b == 0) ? a : gcd(b, a % b)); }
-int lcm(int a,int b){return (a*b)/gcd(a,b);}
+int lcm(int a,int b){return a/gcd(a,b)*b;}
 const ll OO =1e17+10, mod = 1e9+7,mod2=1e9+9,  N=2e5+5,M=25,MOD= 998244353, minOO=LLONG_MIN;
 const double EPS=1e-10;
 const double PI=acos(-1);

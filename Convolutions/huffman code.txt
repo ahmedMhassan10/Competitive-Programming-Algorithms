@@ -1,0 +1,17 @@
+priority_queue<pair<int, vector<int>>> pq;
+
+    for (int i : freq)
+        pq.push({-(i+1), vi(i+1, 1)});
+    while (pq.size() > 1)
+    {
+        vi v1 = pq.top().second; pq.pop();
+        vi v2 = pq.top().second; pq.pop();
+        vector<int> v = conv(v1, v2);
+        pq.push({-v.size()-1, v});
+    }
+
+
+
+
+// from this problem
+https://codeforces.com/problemset/problem/958/F3

@@ -121,3 +121,184 @@ int find_kth(Vertex* vl, Vertex *vr, int tl, int tr, int k) {
         return find_kth(vl->l, vr->l, tl, tm, k);
     return find_kth(vl->r, vr->r, tm+1, tr, k-left_count);
 }
+
+
+///////////////////////////////////////////////////////////////////////////
+
+
+https://codeforces.com/contest/1422/problem/F
+
+#include <bits/stdc++.h>
+#include <ext/pb_ds/assoc_container.hpp>
+#include <ext/pb_ds/tree_policy.hpp>
+
+using namespace std;
+using namespace __gnu_pbds;
+#define ll long long
+//#define int long long
+#define clr(v, d)            memset(v, d, sizeof(v))
+#define vi vector<int>
+const ll OO = 3e18 + 10, mod = 1e9 + 7, mod2 = 1e9 + 9, N = 1e5 + 5, M = 25, MOD = 998244353, minOO = LLONG_MIN;
+
+typedef tree<pair<int, int>, null_type, greater<pair<int, int>>, rb_tree_tag, tree_order_statistics_node_update> ordered_set;
+
+int divC(int a, int b) {
+    return a / b + (a % b != 0);
+}
+
+int n, q;
+int arr[N];
+pair<int, int> child[N * 400];//contain the left and right pointer of some node (M is log value)
+int seg[N * 400];
+int root[N * 2]; // contain pointer that point ot root of current component
+int ptr = 0;
+vector<ll> primes(3 * N + 5, 1);
+
+ll mul(ll a, ll b, ll mod) {
+    return (1LL * a * b) % mod;
+}
+
+ll fop(ll b, ll p, ll mod) {
+    if (!p)
+        return 1;
+    ll temp = fop(b, p / 2, mod) % mod;
+    temp = mul(temp, temp, mod);
+    if (p & 1)
+        temp = mul(temp, b, mod);
+    return temp % mod;
+}
+
+void seive() {
+    for (int i = 2; i <= 3 * N; i++) {
+        primes[i] = i;
+    }
+    primes[0] = 0;
+    primes[1] = 0;
+    for (ll i = 2; i * i <= 3 * N; i++) {
+        if (primes[i] == i) {
+            for (ll j = 2 * i; j <= 3 * N; j += i) {
+                primes[j] = min(primes[j], i);
+            }
+        }
+    }
+}
+
+ll Build(ll l, ll r) {
+    ++ptr;
+    ll id = ptr;
+    if (l == r) {
+        seg[id] = 1;
+        return id;
+    }
+    ll mid = (l + r) / 2;
+    child[id].first = Build(l, mid);
+    child[id].second = Build(mid + 1, r);
+    seg[id] = (1ll*seg[child[id].first] * seg[child[id].second])%mod;
+    return id;
+}
+
+void update(int cur, int prev, int l, int r, int pos, int val) {
+    seg[cur] = seg[prev];
+    if (l == r) {
+        seg[cur] = (1ll*seg[cur] * val)%mod;
+        return;
+    }
+    int mid = (l + r) / 2;
+    if (pos <= mid) {
+        child[cur].first = ++ptr;
+        child[cur].second = child[prev].second;
+        update(child[cur].first, child[prev].first, l, mid, pos, val);
+    } else {
+        child[cur].first = child[prev].first;
+        child[cur].second = ++ptr;
+        update(child[cur].second, child[prev].second, mid + 1, r, pos, val);
+    }
+    seg[cur] = (1ll*seg[child[cur].first] * seg[child[cur].second])%mod;
+}
+
+void modify(int &prev_root, int prime, int &pos, int &prev_val, int val) {
+    if (val == 0)
+        return;
+    prev_val += val;
+    val = (val + mod-1) % (mod-1);
+    ll new_version = ++ptr;
+    update(new_version, prev_root, 0, n - 1, pos, fop(prime, val, mod));
+    prev_root = new_version;
+}
+
+int query(int node, int l, int r, int ql, int qr) {
+    if (node == 0) return 1;
+    if (l > qr || r < ql) return 1;
+    if (l >= ql && r <= qr) return seg[node];
+    int mid = (l + r) / 2;
+    return (1ll*query(child[node].first, l, mid, ql, qr)
+            * query(child[node].second, mid + 1, r, ql, qr)) % mod;
+}
+
+int query(int version, int l, int r) {
+    return query(version, 0, n - 1, l, r);
+}
+
+void solve(int index) {
+    cin >> n;
+    for (int i = 0; i < n; i++) {
+        cin >> arr[i];
+    }
+    seive();
+    root[0] = Build(0, n - 1);
+    vector<vector<pair<int, int>>> prev(3 * N);
+    for (int i = 0; i < n; ++i) {
+        if (i)
+            root[i] = root[i - 1];
+        int x = arr[i];
+        while (x > 1) {
+            int p = primes[x];
+            int cnt = 0;
+            while (x % p == 0) {
+                x /= p;
+                cnt++;
+            }
+            while (prev[p].size() && prev[p].back().second < cnt) {
+                ll val = prev[p].back().second;
+                modify(root[i], p, prev[p].back().first,
+                       prev[p].back().second, -val);
+                prev[p].pop_back();
+                if (prev[p].size()) {
+                    modify(root[i], p, prev[p].back().first,
+                           prev[p].back().second, val);
+                }
+            }
+            if (prev[p].size()) {
+                modify(root[i], p, prev[p].back().first,
+                       prev[p].back().second, -cnt);
+            }
+            prev[p].emplace_back(i, 0);
+            modify(root[i], p, prev[p].back().first,
+                   prev[p].back().second, cnt);
+        }
+    }
+    cin >> q;
+    ll ans = 0;
+    while (q--) {
+        int l, r;
+        cin >> l >> r;
+        l--, r--;
+        ans = query(root[r], l, r);
+        cout << ans << '\n';
+    }
+}
+
+signed main() {
+//    freopen("spooky_splits_validation_input.txt","rt",stdin);
+//    freopen("output.txt","wt",stdout);
+    ios_base::sync_with_stdio(false);
+    cin.tie(nullptr);
+    cout.tie(nullptr);
+    ll t = 1;
+//    cin >> t;
+    for (int i = 1; i <= t; i++)
+        solve(i);
+
+    return 0;
+}
+

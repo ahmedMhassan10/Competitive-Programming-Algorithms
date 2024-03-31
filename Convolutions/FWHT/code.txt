@@ -1,0 +1,55 @@
+template<int MOD>
+struct FWHT {
+    int fast(int b, int e) {
+        int res = 1;
+        for(;e;e>>=1,b=1ll*b*b%MOD)
+            if(e & 1)
+                res = 1ll * res * b % MOD;
+        return res;
+    }
+    inline int add(int x, int y) {
+        return x + y - (x + y >= MOD? MOD : 0);
+    }
+    inline int sub(int x, int y) {
+        return x - y + (x - y < 0? MOD : 0);
+    }
+    #define rep(i, a, b) for(int i = a; i < (b); ++i)
+    #define sz(x) (int)(x).size()
+    void FST(vi& a, bool inv) {
+        for (int n = sz(a), step = 1; step < n; step *= 2) {
+            for (int i = 0; i < n; i += 2 * step) rep(j,i,i+step) {
+                    ll &u = a[j], &v = a[j + step]; tie(u, v) =
+                                                    //				inv ? pii(v - u, u) : pii(v, u + v); // AND
+                                                    //				 inv ? pii(v, u - v) : pii(u + v, u); // OR /// include-line
+                                                    pair<ll,ll>(add(u,v), sub(u,v));                   // XOR /// include-line
+                }
+        }
+        if (inv) {
+            int divisor = fast(sz(a), MOD - 2);
+            //        cout << divisor << endl;
+            for (ll& x : a) x = 1ll * x * divisor % MOD; // XOR only /// include-line
+        }
+    }
+    vi conv(vi a, vi b) {
+        FST(a, 0); FST(b, 0);
+        rep(i,0,sz(a)) a[i] = 1ll * a[i] * b[i] % MOD;
+        FST(a, 1); return a;
+    }
+};
+
+
+
+const int mod = 1e9+7;
+
+
+FWHT<mod> tf1;
+vector<int> basis1(1<<17);
+basis1[0] = 1;
+
+vector<int> multiplier(1<<17); /// put the frequencies here
+basis1 = tf1.conv(basis1, multiplier); 
+
+
+
+
+

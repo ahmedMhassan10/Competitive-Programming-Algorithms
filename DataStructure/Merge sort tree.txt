@@ -1,0 +1,151 @@
+// solve the first occurrance problem
+// https://codeforces.com/problemset/problem/1422/F
+
+#include "bits/stdc++.h"
+using namespace std;
+
+#define pb push_back
+#define F first
+#define S second
+#define f(i,a,b)  for(int i = a; i < b; i++)
+#define all(a)  a.begin(),a.end()
+#define rall(a) a.rbegin(),a.rend()
+
+using ll = long long;
+using ii = pair<int, int>;
+
+
+const int N = 2e5 + 5, LG = 19, MOD = 1e9 + 7;
+using mat = vector<vector<long double>>;
+void printCase(int cs) {
+    cout << "Case #" << cs << ": ";
+}
+const int K = 86;
+bitset<N> isP;
+int a[N], n;
+int t[N * 4][K];
+vector<int> g[K];
+vector<int> v;
+void build(int node, int s, int e) {
+    if(s == e) {
+        for(int j = 0; j < K; j++){
+            while(a[s] % v[j] == 0) {
+                t[node][j] += 1;
+                a[s] /= v[j];
+            }
+        }
+        return;
+    }
+    int md = (s + e) >> 1;
+    build(node << 1, s, md);
+    build(node << 1 | 1, md + 1, e);
+    f(j,0,K)
+        t[node][j] = max(t[node<<1][j], t[node<<1|1][j]);
+}
+int ans[K];
+void qry(int node, int s, int e, int l, int r) {
+    if(r < s || e < l)
+        return;
+    if(l <= s && e <= r) {
+        f(j,0,K)
+            ans[j] = max(ans[j], t[node][j]);
+        return;
+    }
+    int md = (s + e) >> 1;
+    qry(node<<1,s,md,l,r);
+    qry(node<<1|1,md+1,e,l,r);
+}
+int vis[N];
+int prv[N];
+struct mergeSortTree {
+    vector<vector<ii>> t;
+    vector<vector<int>> prefixMul;
+    mergeSortTree() {
+        t.resize(4 * N);
+        prefixMul.resize(4 * N);
+    }
+    void build(int node, int s, int e) {
+        if(s==e) {
+            t[node].push_back({prv[s], a[s]});
+            prefixMul[node].push_back(1);   //////       1 
+            prefixMul[node].push_back(a[s]);/////1 1091          1 1091
+            return;
+        }
+        int md = (s + e) >> 1;
+        build(node<<1,s,md);
+        build(node<<1|1,md+1,e);
+        merge(t[node<<1].begin(), t[node<<1].end(), t[node<<1|1].begin(), t[node<<1|1].end(), back_inserter(t[node]));
+        prefixMul[node].push_back(1);
+        for(auto x : t[node])
+            prefixMul[node].push_back(1ll * prefixMul[node].back() * x.second % MOD);
+    }
+    ////// (-1 ,1) (-1,2) (2,1)
+    int qry(int node, int s, int e, int l, int r) {
+        if(r < s || e < l)
+            return 1;
+        if(l <= s && e <= r) {
+            int idx = lower_bound(t[node].begin(), t[node].end(), make_pair(l,-1)) - t[node].begin();
+            return prefixMul[node][idx];
+        }
+        int md = (s + e) >> 1;
+        return 1ll * qry(node<<1,s,md,l,r) * qry(node<<1|1,md+1,e,l,r) % MOD;
+    }
+};
+int main(){
+
+    isP.set();
+    isP[0] = isP[1] = 0;
+    for(int i = 2; i < N; i++)
+        if(isP[i])
+            for(int j = i + i; j < N; j += i)
+                isP[j] = 0;
+
+    int cnt = 0;
+    for(int i = 0; i * i < N; i++)
+        if(isP[i])v.push_back(i);
+    for(int i = 0; i < v.size(); i++) {
+        g[i].push_back(1);
+        while(g[i].back() * v[i] < N)g[i].push_back(g[i].back() * v[i]);
+    }
+
+    cin >> n;
+
+    f(i,1,n+1)
+        cin >> a[i];
+
+    build(1, 1, n);
+
+    f(i,1,n+1) {
+        prv[i] = vis[a[i]];
+        vis[a[i]] = i;
+    }
+
+    mergeSortTree tr;
+    tr.build(1, 1, n);
+
+    int q;
+    cin >> q;
+    int out = 0;
+    while(q--) {
+        int x, y;
+        cin >> x >> y;
+        x = (out + x) % n + 1;
+        y = (out + y) % n + 1;
+        if(x > y)swap(x, y);
+
+        memset(ans, 0, sizeof ans);
+        qry(1, 1, n, x, y);
+
+        out = 1;
+        for(int k = 0; k < K; k++)
+            out = 1ll * out * g[k][ans[k]] % MOD;
+
+        out = 1ll * out * tr.qry(1, 1, n, x, y) % MOD;
+
+        cout << out << '\n';
+    }
+
+
+
+    return 0;
+}
